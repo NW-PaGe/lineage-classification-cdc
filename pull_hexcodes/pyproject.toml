@@ -1,0 +1,12 @@
+[project]
+name = "test-hex-pull"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "beautifulsoup4>=4.14.2",
+    "lxml>=6.0.2",
+    "polars>=1.35.2",
+    "requests>=2.32.5",
+]
