@@ -15,5 +15,8 @@ from pango_corrector import corrector
 corrector = corrector()
 #check whether the correction key is up to date
 corrector.check_coverage()
-#get the updated lineage name for "A.8"
+#get the updated lineage name for "A.8" (string input)
 corrector.correct("A.8")
+```
+
+See test.py for additional use cases, including series and dataframe inputs.
