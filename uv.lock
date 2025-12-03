@@ -7,11 +7,24 @@ name = "lineage-classification-cdc"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "pango-aliasor" },
     { name = "polars" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "polars", specifier = ">=1.35.2" }]
+requires-dist = [
+    { name = "pango-aliasor", specifier = ">=0.3.0" },
+    { name = "polars", specifier = ">=1.35.2" },
+]
+
+[[package]]
+name = "pango-aliasor"
+version = "0.3.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/9b/8d/ed8a8d5e0dbe4ef9206d9a5c424f4232870c50509c1fbe38bd7393e16810/pango_aliasor-0.3.0.tar.gz", hash = "sha256:0e48154796e40515e481589bc628bb31d153ba652b42dbe174b9a7f32dc85a72", size = 4451, upload-time = "2023-02-10T14:43:05.723Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/07/60/57dc4c7698e05c0fb650a851c3afbdafa3843313c61baf6f761c0d780d35/pango_aliasor-0.3.0-py3-none-any.whl", hash = "sha256:80c2d9eb37d150f9e67e8111e166feb12a849ad715937c4c21a34b016d48302e", size = 4095, upload-time = "2023-02-10T14:43:03.958Z" },
+]
 
 [[package]]
 name = "polars"
