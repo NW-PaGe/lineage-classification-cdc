@@ -10,24 +10,22 @@ def add_status(notes: pl.DataFrame):
     """add status column, where:
     lineages beginning with '*' are named withdrawn,
     otherwise are named active"""
-    notes_status = notes.with_columns(
+    return notes.with_columns(
         pl.when(pl.col("lineage_extracted").str.starts_with("*"))
         .then(pl.lit("withdrawn"))
         .otherwise(pl.lit("active"))
         .alias("status")
     )
-    return notes_status
 
 def remove_leading_stars(notes_status):
     """remove leading stars from the withdrawn lineage names"""
-    notes_sliced = notes_status.with_columns(
+    return notes_status.with_columns(
         pl.when(pl.col("lineage_extracted").str.starts_with("*"))
         .then(pl.col("lineage_extracted").str.slice(1, None))
         .otherwise(pl.col("lineage_extracted"))
     )
-    return notes_sliced
 
-def expand_lineages(df: pl.DataFrame, 
+def expand_lineages(df: pl.DataFrame,
                     col: str, 
                     output_col: "str", 
                     cond_col: str = None, 
@@ -44,7 +42,7 @@ def expand_lineages(df: pl.DataFrame,
         .map_elements(aliasor.uncompress)
         .alias(output_col)
         )
-        print("the values in ", col, "where ", cond_col, "= ", cond_val, "were expanded and assigned to ", output_col)
+        print(f"the values in ", col, "where ", cond_col, "= ", cond_val, "were expanded and assigned to ", output_col)
         return expanded
     else:
         expanded = df.with_columns(
@@ -52,10 +50,10 @@ def expand_lineages(df: pl.DataFrame,
         .map_elements(aliasor.uncompress)
         .alias(output_col)
         )
-        print("Lineages in column ", col, "were expanded and assigned to ", output_col)
+        print(f"Lineages in column ", col, "were expanded and assigned to ", output_col)
         return expanded
 
-def compress_lineages(df: pl.DataFrame, 
+def compress_lineages(df: pl.DataFrame,
                     col: str, 
                     output_col: "str", 
                     cond_col: str = None, 
@@ -85,15 +83,16 @@ def compress_lineages(df: pl.DataFrame,
 
 def add_query_lineage(df: pl.DataFrame):
     """
-    for all lineages:
-        add the lineage """
-    united = df.with_columns(
+    make a unity column containing the lineage
+    - if there isn't a redesignation, use the expanded lineage_extracted
+    - if there was a correction to withdrawn, use the redesignation 
+    """
+    return df.with_columns(
     pl.when(pl.col("status_target").is_null())
     .then("lineage_expanded")
     .otherwise(pl.col("status_target"))
     .alias("query_lineage")
     )
-    return united
 
 def best_parent(child_df: str,
                     child_col: str,
@@ -103,7 +102,7 @@ def best_parent(child_df: str,
     """
     As a whole, best_parent will:
     - for each lineage:
-    - search for query lineages within unique tracked cdc_lineage
+    - search for query_lineages within unique tracked cdc_lineage strings
     - keep the longest search result 
     """
     # get unique cdc lineages tracked
@@ -129,12 +128,11 @@ def best_parent(child_df: str,
                 result_string = s
         return result_string
     # apply the keep_longest function to the parent matches
-    parents_df = parents_df.with_columns(
+    return parents_df.with_columns(
         pl.col("parent_matches")
         .map_elements(keep_longest)
         .alias(output_col)
     ).drop("parent_matches") #remove this to keep col with all parent matches
-    return parents_df
 
 ##############################################
 ### main workflow starts here. ###############
@@ -143,9 +141,15 @@ def best_parent(child_df: str,
 ##############################################
 
 def main():
+    """
+    main() contains the whole workflow, from downloading the latest lineage designations,
+    correcting withdrawn lineages, de-aliasing lineage names, etc.
+    """
     print("Hello from lineage-classification-cdc!")
     # get the latest lineage_notes.txt from pango-designation
-    lineage_notes_url = 'https://raw.githubusercontent.com/cov-lineages/pango-designation/refs/heads/master/lineage_notes.txt'
+    # Source: Official Pango lineage notes (tab-separated values) from the pango-designation GitHub repository
+    lineage_notes_url = \
+        'https://raw.githubusercontent.com/cov-lineages/pango-designation/refs/heads/master/lineage_notes.txt'
     notes = pl.read_csv(lineage_notes_url, separator='\t')
     lineage_notes = notes.rename({'Lineage': 'lineage_extracted'})
     
