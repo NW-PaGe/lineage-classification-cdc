@@ -1,10 +1,11 @@
 import polars as pl
+from importlib import resources
 
 class Corrector:
     """Class representing a the corrector set of functions with corrector df"""
-    def __init__(self, corrector_file='correction_key.csv'):
-        with open(corrector_file, 'r', encoding="utf-8") as file:
-            self.corrector_key = pl.read_csv(file, columns=["Lineage", "redesignation"])
+    def __init__(self, corrector_file=resources.files('pango_corrector').joinpath('correction_key.csv')):
+        with resources.as_file(corrector_file) as corrector_path:
+            self.corrector_key = pl.read_csv(corrector_path, columns=["Lineage", "redesignation"])
 
     def check_coverage(self):
         """
