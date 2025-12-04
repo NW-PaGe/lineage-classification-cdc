@@ -159,6 +159,14 @@ def main():
                     has_header=False,
                     new_columns=["cdc_lineage"],
                     separator="|")
+    # read in the parsed hex codes from pull_hexcodes
+    with open("pull_hexcodes/parsed_hexcodes.csv", 'r') as codes:
+        parsed_hexcodes = pl.read_csv(codes)
+
+    # read in the running list of hex codes for comparisons
+    with open("hexcodes_RL.csv", 'r') as codes_RL:
+        hexcodes_rl = pl.read_csv(codes_RL)   
+
     #####
     # 3 #
     #####
@@ -190,7 +198,7 @@ def main():
     #####
     # 4 #
     #####
-    notes_expanded_united = add_query_lineage(notes_w_expanded_lineages)
+    notes_expanded_united = add_query_lineage(notes_w_expanded_lineages).drop("status_target")
     
     #####
     # 5 #
@@ -216,7 +224,21 @@ def main():
     cdc_parents_compressed = compress_lineages(parents_found, 
                                             col = "cdc_parent_lineage",
                                             output_col="cdc_parent_lineage")
-    print(cdc_parents_compressed)
-
+    
+    # add hex codes from parsed list
+    hex_added = cdc_parents_compressed.join(
+        parsed_hexcodes,
+        left_on = "cdc_parent_lineage",
+        right_on = "variant",
+        how = "left"
+    )
+    # add hex codes from running list for validation
+    hex_rl_added = hex_added.join(
+        hexcodes_rl,
+        left_on = "cdc_parent_lineage",
+        right_on = "variant_RL",\
+        how = "left"
+    )
+    
 if __name__ == "__main__":
     main()
