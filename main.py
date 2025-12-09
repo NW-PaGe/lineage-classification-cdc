@@ -239,6 +239,13 @@ def main():
         right_on = "variant_RL",\
         how = "left"
     )
+
+    # add DOH variant name - cdc parent if exists, otherwise 'other'
+    doh_name = hex_rl_added.with_columns(
+        pl.col("cdc_parent_lineage").replace("", "other").alias("DOH_variant")
+    ).drop("cdc_parent_lineage")
+
+    print(doh_name)
     
 if __name__ == "__main__":
     main()
