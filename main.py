@@ -221,6 +221,10 @@ def main():
                                 parents_df = cdc_variants_expanded,
                                 parents_col = "cdc_lineage_expanded",
                                 output_col = "cdc_parent_lineage")
+    # fill empty cdc_parent_lineage cells with 'null' for downstream logic
+    parents_found = parents_found.with_columns(
+        pl.col("cdc_parent_lineage").replace("", None)
+    )
 
     # compress the cdc parent lineages after matching
     cdc_parents_compressed = compress_lineages(parents_found, 
@@ -246,14 +250,7 @@ def main():
         how = "left",
         coalesce = False,
         validate = "m:1"
-    )
-
-    print(f"hex_rl_added", hex_rl_added.shape)
-    # add DOH variant name - cdc parent if exists, otherwise 'other'
-    doh_name = hex_rl_added.with_columns(
-        pl.col("cdc_parent_lineage").replace("", "other").alias("DOH_variant")
-    ).drop("cdc_parent_lineage")
-    print(f"doh_name", doh_name.shape)
+    ).drop("variant_RL")
 
     # add WHO greek letter designations
     ## make the dictionary
@@ -284,7 +281,7 @@ def main():
     ## joined back to the main working dataframe (left join).
 
     ### get the greek name.
-    who_temp = doh_name.filter(
+    who_temp = hex_rl_added.filter(
         pl.col("status")=="active" # get rid of redesignated lineages to avoid dups going into the next join
     ).join_where(
         who_map_df,
@@ -294,16 +291,29 @@ def main():
 
     ### join the temp dataframe back to the main one to get the greek names
     ### into the main working df
-    who_names = doh_name.join(
+    who_names = hex_rl_added.join(
         who_temp,
         on="query_lineage",
         how="left",
         coalesce = False,
         validate = "m:1" #make sure temp df has unique keys
+    ).drop("query_lineage_right")
+
+    print(who_names)
+    print(who_names.columns)
+    # add DOH variant name - cdc parent if exists.
+    # if not a child of cdc parent lineage,
+    # then who_greek
+    doh_variant_name = who_names.with_columns(
+        pl.when(pl.col("cdc_parent_lineage").is_not_null())
+        .then(pl.col("cdc_parent_lineage"))
+        .when(pl.col("cdc_parent_lineage").is_null() & pl.col("who_greek").is_not_null())
+        .then(pl.col("who_greek"))
+        .otherwise(pl.lit("Other")).alias("doh_variant_name")
     )
-    
-    print(f"who_names", who_names.shape)
-    who_names.write_csv("results/who_names.csv")
+
+    print(doh_variant_name)
+    #doh_variant_name.write_csv("results/doh_variant_name.csv")
 
 if __name__ == "__main__":
     main()
