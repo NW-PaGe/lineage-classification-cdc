@@ -135,9 +135,9 @@ def best_parent(child_df: str,
     ).drop("parent_matches") #remove this to keep col with all parent matches
 
 ##############################################
-### main workflow starts here. ###############
-### numbers in comments correspond to steps ##
-### in hackmd doc ############################
+##  main workflow starts here.              ##
+##  numbers in comments correspond to steps ##
+##  in hackmd doc                           ##
 ##############################################
 
 def main():
@@ -172,6 +172,7 @@ def main():
     #####
 
     with_status = add_status(lineage_notes)
+    with_status.write_csv("results/with_status.csv")
     notes_sliced = remove_leading_stars(with_status)
     corrector = pango_corrector.Corrector() # initialize pango corrector with key
     corrector.check_coverage() # make sure the key is current
@@ -199,7 +200,7 @@ def main():
     # 4 #
     #####
     notes_expanded_united = add_query_lineage(notes_w_expanded_lineages).drop("status_target")
-    
+
     #####
     # 5 #
     #####
@@ -207,6 +208,7 @@ def main():
     cdc_variants_expanded = expand_lineages(df=cdc_variants,
                                             col = "cdc_lineage",
                                             output_col = "cdc_lineage_expanded")
+
     #####
     # 6 #
     #####
@@ -225,27 +227,83 @@ def main():
                                             col = "cdc_parent_lineage",
                                             output_col="cdc_parent_lineage")
     
+    print(f"cdc_parents_compressed", cdc_parents_compressed.shape)
     # add hex codes from parsed list
-    hex_added = cdc_parents_compressed.join(
-        parsed_hexcodes,
-        left_on = "cdc_parent_lineage",
-        right_on = "variant",
-        how = "left"
-    )
+    # hex_added = cdc_parents_compressed.join(
+    #     parsed_hexcodes,
+    #     left_on = "cdc_parent_lineage",
+    #     right_on = "variant",
+    #     how = "left",
+    #     coalesce = False
+    # )
+
+    # print(f"hex_added", hex_added.shape)
     # add hex codes from running list for validation
-    hex_rl_added = hex_added.join(
+    hex_rl_added = cdc_parents_compressed.join(
         hexcodes_rl,
         left_on = "cdc_parent_lineage",
-        right_on = "variant_RL",\
-        how = "left"
+        right_on = "variant_RL",
+        how = "left",
+        coalesce = False,
+        validate = "m:1"
     )
 
+    print(f"hex_rl_added", hex_rl_added.shape)
     # add DOH variant name - cdc parent if exists, otherwise 'other'
     doh_name = hex_rl_added.with_columns(
         pl.col("cdc_parent_lineage").replace("", "other").alias("DOH_variant")
     ).drop("cdc_parent_lineage")
+    print(f"doh_name", doh_name.shape)
 
-    print(doh_name)
+    # add WHO greek letter designations
+    ## make the dictionary
+    who_map = {
+        "B.1.1.7": "Alpha",
+        "B.1.351": "Beta",
+        "B.1.1.28.1": "Gamma",
+        "B.1.617.2": "Delta",
+        "B.1.427": "Epsilon", 
+        "B.1.429": "Epsilon",
+        "B.1.1.28.2": "Zeta",
+        "B.1.525": "Eta",
+        "B.1.1.28.3": "Theta",
+        "B.1.526": "Iota",
+        "B.1.617.1": "Kappa",
+        "B.1.1.1.37": "Lambda",
+        "B.1.621": "Mu",
+        "B.1.1.529": "Omicron",
+        "XBB": "Omicron"}
+    ## turn the dict into a polars dataframe
+    who_map_df = pl.DataFrame({
+        "who_lineage": list(who_map.keys()),
+        "who_greek": list(who_map.values())
+    })
+
+    ## this next part is goofy. join_where() doesn't support left joins,
+    ## so there is an inner join on query lineage, then that gets
+    ## joined back to the main working dataframe (left join).
+
+    ### get the greek name.
+    who_temp = doh_name.filter(
+        pl.col("status")=="active" # get rid of redesignated lineages to avoid dups going into the next join
+    ).join_where(
+        who_map_df,
+        (pl.col("query_lineage") == (pl.col("who_lineage"))) | # where query lineage equals a pango lineage specifying a who name OR:
+        (pl.col("query_lineage").str.starts_with(pl.col("who_lineage")+".")), # is under the parent lineage of a who-named variant 
+    ).select("query_lineage", "who_greek")
+
+    ### join the temp dataframe back to the main one to get the greek names
+    ### into the main working df
+    who_names = doh_name.join(
+        who_temp,
+        on="query_lineage",
+        how="left",
+        coalesce = False,
+        validate = "m:1" #make sure temp df has unique keys
+    )
     
+    print(f"who_names", who_names.shape)
+    who_names.write_csv("results/who_names.csv")
+
 if __name__ == "__main__":
     main()
