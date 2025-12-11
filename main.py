@@ -25,21 +25,24 @@ def remove_leading_stars(notes_status):
         .otherwise(pl.col("lineage_extracted"))
     )
 
-def expand_lineages(df: pl.DataFrame,
+def polar_aliasor(df: pl.DataFrame,
                     col: str, 
-                    output_col: "str", 
+                    output_col: str,
+                    func: str,
                     cond_col: str = None, 
                     cond_val: str = None):
     """
+    Wrapper function for using pango_aliasor across columns of polars dataframes.
     expand lineages in the column 'col'
     when column 'cond_col' equals 'conv_val'
+    function = "compress" or "uncompress"
     """
     aliasor=Aliasor()
     if isinstance(cond_col, str) and isinstance(cond_val, str):
         expanded = df.with_columns(
         pl.when(pl.col(cond_col) == cond_val)
         .then(pl.col(col))
-        .map_elements(aliasor.uncompress)
+        .map_elements(getattr(aliasor, func))
         .alias(output_col)
         )
         print(f"the values in ", col, "where ", cond_col, "= ", cond_val, "were expanded and assigned to ", output_col)
@@ -47,39 +50,11 @@ def expand_lineages(df: pl.DataFrame,
     else:
         expanded = df.with_columns(
         pl.col(col)
-        .map_elements(aliasor.uncompress)
+        .map_elements(getattr(aliasor, func))
         .alias(output_col)
         )
         print(f"Lineages in column ", col, "were expanded and assigned to ", output_col)
         return expanded
-
-def compress_lineages(df: pl.DataFrame,
-                    col: str, 
-                    output_col: "str", 
-                    cond_col: str = None, 
-                    cond_val: str = None):
-    """
-    compress lineages in the column 'col'
-    when column 'cond_col' equals 'conv_val'
-    """
-    aliasor=Aliasor()
-    if isinstance(cond_col, str) and isinstance(cond_val, str):
-        compressed = df.with_columns(
-        pl.when(pl.col(cond_col) == cond_val)
-        .then(pl.col(col))
-        .map_elements(aliasor.compress)
-        .alias(output_col)
-        )
-        print("the values in ", col, "where ", cond_col, "= ", cond_val, "were compressed and assigned to ", output_col)
-        return compressed
-    else:
-        compressed = df.with_columns(
-        pl.col(col)
-        .map_elements(aliasor.compress)
-        .alias(output_col)
-        )
-        print("Lineages in column ", col, "were compressed and assigned to ", output_col)
-        return compressed
 
 def add_query_lineage(df: pl.DataFrame):
     """
@@ -177,11 +152,12 @@ def main():
     corrector = pango_corrector.Corrector() # initialize pango corrector with key
     corrector.check_coverage() # make sure the key is current
     notes_with_target = corrector.correct(notes_sliced, input_col="lineage_extracted").rename({"redesignation": "status_target"})
-    notes_w_expanded_target = expand_lineages(
+    notes_w_expanded_target = polar_aliasor(
         notes_with_target,
         col = "status_target",
         cond_col = "status",
         cond_val="withdrawn",
+        func="uncompress",
         output_col="status_target"
     )
 
@@ -190,10 +166,11 @@ def main():
     #####
 
     aliasor = Aliasor() #initialize pango_aliasor
-    notes_w_expanded_lineages = expand_lineages(notes_w_expanded_target,
+    notes_w_expanded_lineages = polar_aliasor(notes_w_expanded_target,
                             col="lineage_extracted",
                             cond_col="status",
                             cond_val="active",
+                            func="uncompress",
                             output_col="lineage_expanded")
 
     #####
@@ -205,8 +182,9 @@ def main():
     # 5 #
     #####
     # expand list of CDC tracked lineages, if not already expanded
-    cdc_variants_expanded = expand_lineages(df=cdc_variants,
+    cdc_variants_expanded = polar_aliasor(df=cdc_variants,
                                             col = "cdc_lineage",
+                                            func = "uncompress",
                                             output_col = "cdc_lineage_expanded")
 
     #####
@@ -227,11 +205,11 @@ def main():
     )
 
     # compress the cdc parent lineages after matching
-    cdc_parents_compressed = compress_lineages(parents_found, 
+    cdc_parents_compressed = polar_aliasor(parents_found, 
                                             col = "cdc_parent_lineage",
+                                            func = "compress",
                                             output_col="cdc_parent_lineage")
-    
-    print(f"cdc_parents_compressed", cdc_parents_compressed.shape)
+
     # add hex codes from parsed list
     # hex_added = cdc_parents_compressed.join(
     #     parsed_hexcodes,
@@ -305,15 +283,15 @@ def main():
     # if not a child of cdc parent lineage,
     # then who_greek
     doh_variant_name = who_names.with_columns(
-        pl.when(pl.col("cdc_parent_lineage").is_not_null())
-        .then(pl.col("cdc_parent_lineage"))
-        .when(pl.col("cdc_parent_lineage").is_null() & pl.col("who_greek").is_not_null())
-        .then(pl.col("who_greek"))
-        .otherwise(pl.lit("Other")).alias("doh_variant_name")
+        pl.when(pl.col("cdc_parent_lineage").is_not_null()) #if lineage has a cdc parent
+        .then(pl.col("cdc_parent_lineage")) # doh_variant_name = cdc parent
+        .when(pl.col("cdc_parent_lineage").is_null() & pl.col("who_greek").is_not_null()) # if no cdc parent, but has who name
+        .then(pl.col("who_greek")) # then doh_variant_name = who green name
+        .otherwise(pl.lit("Other")).alias("doh_variant_name") # otherwise assign "other"
     )
 
     print(doh_variant_name)
-    #doh_variant_name.write_csv("results/doh_variant_name.csv")
+    doh_variant_name.write_csv("results/doh_variant_name.csv")
 
 if __name__ == "__main__":
     main()
