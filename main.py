@@ -147,7 +147,6 @@ def main():
     #####
 
     with_status = add_status(lineage_notes)
-    with_status.write_csv("results/with_status.csv")
     notes_sliced = remove_leading_stars(with_status)
     corrector = pango_corrector.Corrector() # initialize pango corrector with key
     corrector.check_coverage() # make sure the key is current
@@ -277,8 +276,7 @@ def main():
         validate = "m:1" #make sure temp df has unique keys
     ).drop("query_lineage_right")
 
-    print(who_names)
-    print(who_names.columns)
+
     # add DOH variant name - cdc parent if exists.
     # if not a child of cdc parent lineage,
     # then who_greek
@@ -290,8 +288,43 @@ def main():
         .otherwise(pl.lit("Other")).alias("doh_variant_name") # otherwise assign "other"
     )
 
-    print(doh_variant_name)
-    doh_variant_name.write_csv("results/doh_variant_name.csv")
+    # Add the doh_variant_name_tables thing. Reverse-engineered from the R script on the network drive.
+    # shouldn't change since this is for backwards compatibility (notice lack of omicron defs).
+
+    ## make the map:
+    table_name_map = {
+        "Delta": "B.1.617.2",
+        "Alpha": "B.1.1.7",
+        "Beta": "B.1.351",
+        "Epsilon": "B.1.427 / B.1.429",
+        "Eta": "B.1.525",
+        "Iota": "B.1.526",
+        "Kappa": "B.1.617.1",
+        "Gamma": "P.1",
+        "Mu": "B.1.621",
+        "Zeta": "P.2"
+    }
+    table_map_df = pl.DataFrame({
+        "who_greek": list(table_name_map.keys()),
+        "doh_variant_name_tables": list(table_name_map.values())
+    })
+    ## Now join these on "who_greek" and call doh_variant_name_tables
+    variant_name_tables_greek_to_pango = doh_variant_name.join(
+        table_map_df,
+        on="who_greek",
+        how="left",
+        coalesce = False,
+        validate = "m:1" #make sure temp df has unique keys
+    ).drop("who_greek_right")
+
+    ## fill in the null values with doh_variant_name
+    variant_name_tables = variant_name_tables_greek_to_pango.with_columns(
+        pl.when(pl.col("doh_variant_name_tables").is_null())
+        .then(pl.col("doh_variant_name"))
+        .alias("doh_variant_name_tables")
+    )
+    variant_name_tables.write_csv("results/lineage_classifications.csv")
+    print("All parsed and written to results/lineage_classifications.csv")
 
 if __name__ == "__main__":
     main()
