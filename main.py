@@ -1,4 +1,5 @@
 import polars as pl
+import fastexcel
 from pango_corrector import pango_corrector
 from pango_aliasor.aliasor import Aliasor
 
@@ -50,10 +51,11 @@ def best_parent(child_df: str,
     """
     # get unique cdc lineages tracked
     cdc_unique = parents_df[parents_col].to_list()
+    cdc_unique_query = [l + "." for l in cdc_unique]
     # get all parent matches, store under "parent matches" column
     parents_df = child_df.with_columns(
-        pl.col(child_col)
-        .str.extract_many(cdc_unique, overlapping=True)
+        pl.concat_str(pl.col(child_col), pl.lit("."))
+        .str.extract_many(cdc_unique_query, overlapping=True)
         .alias("parent_matches")
     )
 
@@ -69,7 +71,7 @@ def best_parent(child_df: str,
             if breaks > max_breaks:
                 max_breaks = breaks
                 result_string = s
-        return result_string
+        return result_string[:-1] #remove trailing "." after search is done
     # apply the keep_longest function to the parent matches
     return parents_df.with_columns(
         pl.col("parent_matches")
@@ -83,7 +85,7 @@ def best_parent(child_df: str,
 ##  in hackmd doc                           ##
 ##############################################
 
-def make_map():
+def make_map(csv: str):
     """
     main() contains the whole workflow, from downloading the latest lineage designations,
     correcting withdrawn lineages, de-aliasing lineage names, etc.
@@ -102,13 +104,58 @@ def make_map():
                     has_header=False,
                     new_columns=["cdc_lineage"],
                     separator="|")
-    # read in the parsed hex codes from pull_hexcodes
-    with open("pull_hexcodes/parsed_hexcodes.csv", 'r') as codes:
-        parsed_hexcodes = pl.read_csv(codes)
 
-    # read in the running list of hex codes for comparisons
-    with open("hexcodes_RL.csv", 'r') as codes_RL:
-        hexcodes_rl = pl.read_csv(codes_RL)   
+    # read in the parsed hex codes from pull_hexcodes - pending pull_hexcodes working well
+    # with open("pull_hexcodes/parsed_hexcodes.csv", 'r') as codes:
+    #     parsed_hexcodes = pl.read_csv(codes)
+
+    # read in the running list of hex codes
+    with open("Lineage_Color_Codes.xlsx", 'rb') as hex_codes:
+        hexcodes_rl = pl.read_excel(hex_codes, 
+                                    sheet_name="NowCast Running List", 
+                                    columns = ["doh_variant_name", "who_name", "hex_code"],
+                                    schema_overrides={"doh_variant_name": pl.String,
+                                                      "who_name": pl.String,
+                                                      "hex_code": pl.String})
+        hexcodes_retired = pl.read_excel(hex_codes, 
+                                         sheet_name="Retired Variants on NowCast", 
+                                         columns = ["doh_variant_name", "who_name", "hex_code"],
+                                         schema_overrides={"doh_variant_name": pl.String,
+                                                      "who_name": pl.String,
+                                                      "hex_code": pl.String})
+    #concatenate and remove leading/trailing whitespace from excel file
+    hexcodes_dirty = pl.concat([hexcodes_rl, hexcodes_retired], how="vertical_relaxed")
+    hexcodes = hexcodes_dirty.with_columns(
+        pl.col(pl.Utf8).str.strip_chars()
+    )
+    # break cdc hex codes and who hex codes into separate df's
+    hexcodes_cdc = hexcodes.filter(
+        pl.col("who_name").is_null()
+    )
+    hexcodes_who = hexcodes.filter(
+        pl.col("who_name").is_not_null()
+    )
+    #################################
+    ### Hex code quality control. ###
+    #################################
+    # If duplicate rows exist for a cdc lineage, then print 
+    # the duplicates and filter out repeats.
+    print(f"Checking for duplicates of cdc-tracked lineage hex codes... \n")
+    cdc_hex_dups = hexcodes_cdc.filter(hexcodes_cdc["doh_variant_name"].is_duplicated())
+    if cdc_hex_dups.shape[0] > 0 :
+        print(f"Duplicates were found in the list of CDC hex codes. Duplicates will be removed, and first value kept: \n")
+        print(cdc_hex_dups)
+        hexcodes_cdc = hexcodes_cdc.unique(subset="doh_variant_name", keep="first")
+    else: print(f"All CDC-tracked lineages have unique hex codes - go team! \n")
+
+    # same QC step for who hex codes:
+    print(f"Checking for duplicates of who-designation hex codes... \n")
+    who_hex_dups = hexcodes_who.filter(hexcodes_who["who_name"].is_duplicated())
+    if who_hex_dups.shape[0] > 0 :
+        print(f"Duplicates were found in the list of who hex codes. Duplicates will be removed, and first value kept: \n")
+        print(who_hex_dups)
+        hexcodes_who = hexcodes_who.unique(subset="who_name", keep="first")
+    else : print(f"All WHO lineages have unique hex codes - go team! \n")
 
     #####
     # 3 #
@@ -193,26 +240,6 @@ def make_map():
                                             func = "compress",
                                             output_col="cdc_parent_lineage")
 
-    # add hex codes from parsed list
-    # hex_added = cdc_parents_compressed.join(
-    #     parsed_hexcodes,
-    #     left_on = "cdc_parent_lineage",
-    #     right_on = "variant",
-    #     how = "left",
-    #     coalesce = False
-    # )
-
-    # print(f"hex_added", hex_added.shape)
-    # add hex codes from running list for validation
-    hex_rl_added = cdc_parents_compressed.join(
-        hexcodes_rl,
-        left_on = "cdc_parent_lineage",
-        right_on = "variant_RL",
-        how = "left",
-        coalesce = False,
-        validate = "m:1"
-    ).drop("variant_RL")
-
     # add WHO greek letter designations
     ## make the dictionary
     who_map = {
@@ -242,23 +269,23 @@ def make_map():
     ## joined back to the main working dataframe (left join).
 
     ### get the greek name.
-    who_temp = hex_rl_added.filter(
+    who_temp = cdc_parents_compressed.filter(
         pl.col("status")=="active" # get rid of redesignated lineages to avoid dups going into the next join
     ).join_where(
         who_map_df,
         (pl.col("query_lineage") == (pl.col("who_lineage"))) | # where query lineage equals a pango lineage specifying a who name OR:
         (pl.col("query_lineage").str.starts_with(pl.col("who_lineage")+".")), # is under the parent lineage of a who-named variant 
-    ).select("query_lineage", "who_greek")
+    ).select("query_lineage", "who_greek") #keep only these columns
 
     ### join the temp dataframe back to the main one to get the greek names
     ### into the main working df
-    who_names = hex_rl_added.join(
+    who_names = cdc_parents_compressed.join(
         who_temp,
         on="query_lineage",
         how="left",
         coalesce = False,
         validate = "m:1" #make sure temp df has unique keys
-    ).drop("query_lineage_right")
+    ).drop("query_lineage_right") #drop this column
 
 
     # add DOH variant name - cdc parent if exists.
@@ -308,8 +335,41 @@ def make_map():
         .then(pl.col("doh_variant_name"))
         .alias("doh_variant_name_tables")
     )
-    variant_name_tables.write_csv("results/lineage_classifications.csv")
-    print("All parsed and written to results/lineage_classifications.csv")
+
+    #add hex codes for cdc parent lineages
+    print("shape_before_adding_pango_hexcodes", variant_name_tables.shape)
+    cdc_hex_added = variant_name_tables.join(
+        hexcodes_cdc,
+        on = "doh_variant_name",
+        how = "left",
+        coalesce = False,
+        validate = "m:1"
+    ).drop("who_name", "doh_variant_name_right").rename({"hex_code": "cdc_hex"})
+    print("cdc_hex_added shape:", cdc_hex_added.shape)
+    # Log warning for missing CDC parent lineage hex codes
+    missing_cdc_hex = cdc_hex_added.filter(
+        pl.col("cdc_parent_lineage").is_not_null() & pl.col("cdc_hex").is_null()
+    )
+    print(f"The following cdc-tracked parent lineages are missing hex codes in the external list (excel):",
+          missing_cdc_hex["cdc_parent_lineage"].unique(),
+          "Will add the relevant hex code for the who name instead.")
+    # Add the who hex codes
+    who_hex_added = cdc_hex_added.join(
+        hexcodes_who,
+        left_on= "doh_variant_name",
+        how = "left",
+        right_on="who_name",
+        coalesce = False,
+        validate="m:1"
+    ).drop(["doh_variant_name_right", "who_name"]).rename({"hex_code": "who_hex"})
+    # hex_added = who_hex_added.with_columns(
+    #     pl.coalesce("hex_code", "hex_code_right"
+    #         ).alias("hex_code")
+    # )
+    final_df = who_hex_added#.fill_null("N/A")
+    print(final_df)
+    if csv is not None:
+        final_df.write_csv(csv)
 
 if __name__ == "__main__":
-    make_map()
+    lineage_classifications = make_map(csv="results/lineage_class_new.csv")
