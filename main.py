@@ -6,30 +6,11 @@ from pango_aliasor.aliasor import Aliasor
 ### Define functions for use in main() ###
 ##########################################
 
-def add_status(notes: pl.DataFrame):
-    """add status column, where:
-    lineages beginning with '*' are named withdrawn,
-    otherwise are named active"""
-    return notes.with_columns(
-        pl.when(pl.col("lineage_extracted").str.starts_with("*"))
-        .then(pl.lit("withdrawn"))
-        .otherwise(pl.lit("active"))
-        .alias("status")
-    )
-
-def remove_leading_stars(notes_status):
-    """remove leading stars from the withdrawn lineage names"""
-    return notes_status.with_columns(
-        pl.when(pl.col("lineage_extracted").str.starts_with("*"))
-        .then(pl.col("lineage_extracted").str.slice(1, None))
-        .otherwise(pl.col("lineage_extracted"))
-    )
-
 def polar_aliasor(df: pl.DataFrame,
-                    col: str, 
+                    col: str,
                     output_col: str,
                     func: str,
-                    cond_col: str = None, 
+                    cond_col: str = None,
                     cond_val: str = None):
     """
     Wrapper function for using pango_aliasor across columns of polars dataframes.
@@ -55,19 +36,6 @@ def polar_aliasor(df: pl.DataFrame,
         )
         print(f"Lineages in column ", col, "were expanded and assigned to ", output_col)
         return expanded
-
-def add_query_lineage(df: pl.DataFrame):
-    """
-    make a unity column containing the lineage
-    - if there isn't a redesignation, use the expanded lineage_extracted
-    - if there was a correction to withdrawn, use the redesignation 
-    """
-    return df.with_columns(
-    pl.when(pl.col("status_target").is_null())
-    .then("lineage_expanded")
-    .otherwise(pl.col("status_target"))
-    .alias("query_lineage")
-    )
 
 def best_parent(child_df: str,
                     child_col: str,
@@ -115,7 +83,7 @@ def best_parent(child_df: str,
 ##  in hackmd doc                           ##
 ##############################################
 
-def main():
+def make_map():
     """
     main() contains the whole workflow, from downloading the latest lineage designations,
     correcting withdrawn lineages, de-aliasing lineage names, etc.
@@ -145,9 +113,20 @@ def main():
     #####
     # 3 #
     #####
+    # add status
+    with_status = lineage_notes.with_columns(
+        pl.when(pl.col("lineage_extracted").str.starts_with("*"))
+        .then(pl.lit("withdrawn"))
+        .otherwise(pl.lit("active"))
+        .alias("status")
+    )
 
-    with_status = add_status(lineage_notes)
-    notes_sliced = remove_leading_stars(with_status)
+    notes_sliced = with_status.with_columns(
+            pl.when(pl.col("lineage_extracted").str.starts_with("*"))
+            .then(pl.col("lineage_extracted").str.slice(1, None))
+            .otherwise(pl.col("lineage_extracted"))
+    )
+
     corrector = pango_corrector.Corrector() # initialize pango corrector with key
     corrector.check_coverage() # make sure the key is current
     notes_with_target = corrector.correct(notes_sliced, input_col="lineage_extracted").rename({"redesignation": "status_target"})
@@ -175,7 +154,12 @@ def main():
     #####
     # 4 #
     #####
-    notes_expanded_united = add_query_lineage(notes_w_expanded_lineages).drop("status_target")
+    notes_expanded_united = notes_w_expanded_lineages.with_columns(
+    pl.when(pl.col("status_target").is_null())
+    .then("lineage_expanded")
+    .otherwise(pl.col("status_target"))
+    .alias("query_lineage")
+    ).drop("status_target")
 
     #####
     # 5 #
@@ -289,7 +273,8 @@ def main():
     )
 
     # Add the doh_variant_name_tables thing. Reverse-engineered from the R script on the network drive.
-    # shouldn't change since this is for backwards compatibility (notice lack of omicron defs).
+    # shouldn't change since this is for backwards compatibility (notice lack of omicron defs). Specific
+    # variable for a workflow at WA DOH.
 
     ## make the map:
     table_name_map = {
@@ -327,4 +312,4 @@ def main():
     print("All parsed and written to results/lineage_classifications.csv")
 
 if __name__ == "__main__":
-    main()
+    make_map()
