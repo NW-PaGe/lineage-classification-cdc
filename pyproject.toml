@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "fastexcel>=0.18.0",
     "pango-aliasor>=0.3.0",
     "polars>=1.35.2",
 ]
