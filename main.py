@@ -14,10 +14,11 @@ def polar_aliasor(df: pl.DataFrame,
                     cond_col: str = None,
                     cond_val: str = None):
     """
-    Wrapper function for using pango_aliasor across columns of polars dataframes.
+    Wrapper function for using pango_aliasor across columns of polars DataFrames.
     expand lineages in the column 'col'
     when column 'cond_col' equals 'conv_val'
-    function = "compress" or "uncompress"
+    function = "compress" or "uncompress" (see aliasor documentation).
+    Might also work for other aliasor functions (UNTESTED though)
     """
     aliasor=Aliasor()
     if isinstance(cond_col, str) and isinstance(cond_val, str):
@@ -51,17 +52,19 @@ def best_parent(child_df: str,
     """
     # get unique cdc lineages tracked
     cdc_unique = parents_df[parents_col].to_list()
+    ## add a trailing "." for each cdc variant,
+    # i.e. to prevent BA.1.1 from matching BA.1.11
     cdc_unique_query = [l + "." for l in cdc_unique]
-    # get all parent matches, store under "parent matches" column
+    # get all parent matches, store under "parent matches" column.
+    #adding
     parents_df = child_df.with_columns(
-        pl.concat_str(pl.col(child_col), pl.lit("."))
+        pl.concat_str(pl.col(child_col), pl.lit(".")) #add a trailing "." to query lineages
         .str.extract_many(cdc_unique_query, overlapping=True)
         .alias("parent_matches")
     )
-
     def keep_longest(list):
         """
-        function to count breaks of each string in "parent matches"
+        function to count breaks of each list of strings in "parent matches"
         and return the longest one.
         """
         max_breaks = -1
@@ -72,7 +75,8 @@ def best_parent(child_df: str,
                 max_breaks = breaks
                 result_string = s
         return result_string[:-1] #remove trailing "." after search is done
-    # apply the keep_longest function to the parent matches
+    # apply the keep_longest function to the parent matches. This is for
+    # selecting the most distal/specific cdc-tracked variant
     return parents_df.with_columns(
         pl.col("parent_matches")
         .map_elements(keep_longest)
@@ -85,7 +89,7 @@ def best_parent(child_df: str,
 ##  in hackmd doc                           ##
 ##############################################
 
-def make_map(csv: str):
+def make_map(csv: str = None):
     """
     main() contains the whole workflow, from downloading the latest lineage designations,
     correcting withdrawn lineages, de-aliasing lineage names, etc.
@@ -131,10 +135,10 @@ def make_map(csv: str):
     # break cdc hex codes and who hex codes into separate df's
     hexcodes_cdc = hexcodes.filter(
         pl.col("who_name").is_null()
-    )
+    ).drop("who_name")
     hexcodes_who = hexcodes.filter(
         pl.col("who_name").is_not_null()
-    )
+    ).drop("doh_variant_name")
     #################################
     ### Hex code quality control. ###
     #################################
@@ -157,6 +161,22 @@ def make_map(csv: str):
         hexcodes_who = hexcodes_who.unique(subset="who_name", keep="first")
     else : print(f"All WHO lineages have unique hex codes - go team! \n")
 
+    # check for CDC-tracked lineages that are missing hex codes:
+    print(f"Checking for variants in the list of CDC-tracked variant list that are missing hex codes: \n")
+    cdc_variants_missing_hex_codes = pl.DataFrame({
+        "cdc_lineages": cdc_variants
+    }).join(
+        hexcodes_cdc,
+        left_on="cdc_lineages",
+        right_on="doh_variant_name",
+        how="left"
+    ).filter(
+        "hex_code" == None
+    )
+    if cdc_variants_missing_hex_codes.shape[0] > 0 :
+        print("The following cdc-tracked variants are missing hex codes \n",
+              cdc_variants_missing_hex_codes)
+    else: print("Hex codes are present for all CDC-tracked variants. Go team! \n")
     #####
     # 3 #
     #####
@@ -189,7 +209,6 @@ def make_map(csv: str):
     #####
     # 2 #
     #####
-
     aliasor = Aliasor() #initialize pango_aliasor
     notes_w_expanded_lineages = polar_aliasor(notes_w_expanded_target,
                             col="lineage_extracted",
@@ -197,7 +216,6 @@ def make_map(csv: str):
                             cond_val="active",
                             func="uncompress",
                             output_col="lineage_expanded")
-
     #####
     # 4 #
     #####
@@ -220,7 +238,6 @@ def make_map(csv: str):
     #####
     # 6 #
     #####
-
     # for the complete data set notes_expanded_inited
     # find the closest parent lineage in the expanded
     # cdc lineages
@@ -344,7 +361,7 @@ def make_map(csv: str):
         how = "left",
         coalesce = False,
         validate = "m:1"
-    ).drop("who_name", "doh_variant_name_right").rename({"hex_code": "cdc_hex"})
+    ).drop("doh_variant_name_right").rename({"hex_code": "cdc_hex"})
     print("cdc_hex_added shape:", cdc_hex_added.shape)
     # Log warning for missing CDC parent lineage hex codes
     missing_cdc_hex = cdc_hex_added.filter(
@@ -361,12 +378,14 @@ def make_map(csv: str):
         right_on="who_name",
         coalesce = False,
         validate="m:1"
-    ).drop(["doh_variant_name_right", "who_name"]).rename({"hex_code": "who_hex"})
-    # hex_added = who_hex_added.with_columns(
-    #     pl.coalesce("hex_code", "hex_code_right"
-    #         ).alias("hex_code")
-    # )
-    final_df = who_hex_added#.fill_null("N/A")
+    ).drop("who_name").rename({"hex_code": "who_hex"})
+    # merge cdc and who hex codes to single column 
+    hex_added = who_hex_added.with_columns(
+         pl.coalesce("cdc_hex", "who_hex"
+             ).alias("hex_code")
+    ).drop(["who_hex", "cdc_hex"])
+
+    final_df = hex_added#.fill_null("N/A")
     print(final_df)
     if csv is not None:
         final_df.write_csv(csv)
