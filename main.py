@@ -400,10 +400,16 @@ def make_map(csv: str, workflow_type: str = "clinical"):
             validate="m:1"
         ).drop("who_name").rename({"hex_code": "who_hex"})
         # merge cdc and who hex codes to single column 
-        return who_hex_added.with_columns(
+        hex_coalesced = who_hex_added.with_columns(
             pl.coalesce("cdc_hex", "who_hex"
                 ).alias("hex_code")
-        ).drop(["who_hex", "cdc_hex"]).fill_null("N/A")
+        ).drop(["who_hex", "cdc_hex"])
+        # final processing
+        return hex_coalesced.drop(
+            "lineage_expanded",
+            "query_lineage",
+            "cdc_parent_lineage"
+        ).rename({"who_greek": "who_name"}).fill_null("N/A")
     
     if workflow_type == 'clinical': # add variables specific to clinical file:
         clinical_df = add_clinical_variables()
@@ -445,11 +451,15 @@ def make_map(csv: str, workflow_type: str = "clinical"):
             validate="m:1"
         ).drop("who_name").rename({"hex_code": "who_hex"})
         # merge cdc and who hex codes to single column 
-        return ww_who_hex_added.with_columns(
+        ww_hex_coalesced = ww_who_hex_added.with_columns(
             pl.coalesce("cdc_hex", "who_hex"
                 ).alias("hex_code")
-        ).drop(["who_hex", "cdc_hex"]).fill_null("N/A")
-        
+        )
+        # final processing
+        return ww_hex_coalesced.drop(
+            "who_hex", "cdc_hex", "lineage_expanded", "query_lineage", "cdc_parent_lineage"
+            ).fill_null("N/A").rename({"who_greek": "who_name"})
+
         # add a row for watewater_variant_name = "unreportable" so that the unreportable Freyja outputs
         # get assigned the grey hex code
         # unreportables = pl.DataFrame({
