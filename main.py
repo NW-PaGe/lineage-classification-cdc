@@ -1,5 +1,6 @@
 import polars as pl
 import fastexcel
+import argparse
 from pango_corrector import pango_corrector
 from pango_aliasor.aliasor import Aliasor
 
@@ -87,7 +88,7 @@ def best_parent(child_df: str,
 ##  in hackmd doc                           ##
 ##############################################
 
-def make_map(workflow_type: str = "clinical", csv: bool = True):
+def make_map(csv: str, workflow_type: str = "clinical"):
     """
     main() contains the whole workflow, from downloading the latest lineage designations,
     correcting withdrawn lineages, de-aliasing lineage names, etc.
@@ -98,7 +99,7 @@ def make_map(workflow_type: str = "clinical", csv: bool = True):
     if workflow_type not in ["clinical", "wastewater"]:
         raise ValueError("Error: workflow_type should be either 'clinical' or 'wastewater'. Please correct the argument.")
 
-    print("Hello from lineage-classification-cdc!")
+    print("Hello from lineage-classification-cdc! \n")
 
     def get_lineage_notes():
         # get the latest lineage_notes.txt from pango-designation
@@ -106,7 +107,7 @@ def make_map(workflow_type: str = "clinical", csv: bool = True):
         lineage_notes_url = \
             'https://raw.githubusercontent.com/cov-lineages/pango-designation/refs/heads/master/lineage_notes.txt'
         notes = pl.read_csv(lineage_notes_url, separator='\t')
-        print(f"lineage notes were pulled successfully.")
+        print(f"lineage notes were pulled successfully. \n")
         return notes.rename({'Lineage': 'lineage_extracted'})
     lineage_notes = get_lineage_notes()
 
@@ -163,19 +164,19 @@ def make_map(workflow_type: str = "clinical", csv: bool = True):
         print(f"Checking for duplicates of cdc-tracked lineage hex codes... \n")
         cdc_hex_dups = hexcodes_cdc.filter(hexcodes_cdc["doh_variant_name"].is_duplicated())
         if cdc_hex_dups.shape[0] > 0 :
-            print(f"Duplicates were found in the list of CDC hex codes. Duplicates will be removed, and first value kept: \n")
+            print(f"    Duplicates were found in the list of CDC hex codes. Duplicates will be removed, and first value kept: \n")
             print(cdc_hex_dups)
             hexcodes_cdc = hexcodes_cdc.unique(subset="doh_variant_name", keep="first")
-        else: print(f"All CDC-tracked lineages have unique hex codes - go team! \n")
+        else: print(f"  All CDC-tracked lineages have unique hex codes - go team! \n")
 
         # same QC step for who hex codes:
         print(f"Checking for duplicates of who-designation hex codes... \n")
         who_hex_dups = hexcodes_who.filter(hexcodes_who["who_name"].is_duplicated())
         if who_hex_dups.shape[0] > 0 :
-            print(f"Duplicates were found in the list of who hex codes. Duplicates will be removed, and first value kept: \n")
+            print(f"    Duplicates were found in the list of who hex codes. Duplicates will be removed, and first value kept: \n")
             print(who_hex_dups)
             hexcodes_who = hexcodes_who.unique(subset="who_name", keep="first")
-        else : print(f"All WHO lineages have unique hex codes - go team! \n")
+        else : print(f" All WHO lineages have unique hex codes - go team! \n")
 
         # check for CDC-tracked lineages that are missing hex codes:
         print(f"Checking for variants in the list of CDC-tracked variant list that are missing hex codes: \n")
@@ -187,12 +188,12 @@ def make_map(workflow_type: str = "clinical", csv: bool = True):
             right_on="doh_variant_name",
             how="left"
         ).filter(
-            "hex_code" == None
+            pl.col("hex_code").is_null()
         )
         if cdc_variants_missing_hex_codes.shape[0] > 0 :
-            print("The following cdc-tracked variants are missing hex codes \n",
-                cdc_variants_missing_hex_codes)
-        else: print("Hex codes are present for all CDC-tracked variants. Go team! \n")
+            print(" The following cdc-tracked variants are missing hex codes \n",
+                cdc_variants_missing_hex_codes, "\n")
+        else: print("   Hex codes are present for all CDC-tracked variants. Go team! \n")
         return hexcodes_cdc, hexcodes_who
     hexcodes_cdc, hexcodes_who = get_hex_codes()
 
@@ -245,7 +246,7 @@ def make_map(workflow_type: str = "clinical", csv: bool = True):
         .otherwise(pl.col("status_target"))
         .alias("query_lineage")
         ).drop("status_target")
-        print(notes_expanded_united.shape, "notes_expanded united")
+
         #####
         # 5 #
         #####
@@ -341,7 +342,7 @@ def make_map(workflow_type: str = "clinical", csv: bool = True):
     ## to produce the clinical file or wastewater file.      ##
     ###########################################################
     def add_clinical_variables():
-        base_df
+        base_df_filtered = base_df.filter(pl.col("status")=='active')
         # Add the doh_variant_name_tables thing. Reverse-engineered from the R script on the network drive.
         # shouldn't change since this is for backwards compatibility (notice lack of omicron defs). Specific
         # variable for a workflow at WA DOH.
@@ -364,7 +365,7 @@ def make_map(workflow_type: str = "clinical", csv: bool = True):
             "doh_variant_name_tables": list(table_name_map.values())
         })
         ## Now join these on "who_greek" and call doh_variant_name_tables
-        variant_name_tables_greek_to_pango = base_df.join(
+        variant_name_tables_greek_to_pango = base_df_filtered.join(
             table_map_df,
             on="who_greek",
             how="left",
@@ -389,13 +390,6 @@ def make_map(workflow_type: str = "clinical", csv: bool = True):
             validate = "m:1"
         ).drop("doh_variant_name_right").rename({"hex_code": "cdc_hex"})
 
-        # Log warning for missing CDC parent lineage hex codes
-        missing_cdc_hex = cdc_hex_added.filter(
-            pl.col("cdc_parent_lineage").is_not_null() & pl.col("cdc_hex").is_null()
-        )
-        print(f"The following cdc-tracked parent lineages are missing hex codes in the external list (excel):",
-            missing_cdc_hex["cdc_parent_lineage"].unique(),
-            "Will add the relevant hex code for the who name instead.")
         # Add the who hex codes
         who_hex_added = cdc_hex_added.join(
             hexcodes_who,
@@ -409,12 +403,13 @@ def make_map(workflow_type: str = "clinical", csv: bool = True):
         return who_hex_added.with_columns(
             pl.coalesce("cdc_hex", "who_hex"
                 ).alias("hex_code")
-        ).drop(["who_hex", "cdc_hex"])
+        ).drop(["who_hex", "cdc_hex"]).fill_null("N/A")
     
     if workflow_type == 'clinical': # add variables specific to clinical file:
         clinical_df = add_clinical_variables()
-        if csv == True:
-            clinical_df.write_csv("results/lineage_classifications.csv")
+        if csv is not None:
+            clinical_df.write_csv(csv)
+        print("Successfully produced the clinical lineage classification file! \n")
         return clinical_df
 
     def add_wastewater_variables():
@@ -440,13 +435,6 @@ def make_map(workflow_type: str = "clinical", csv: bool = True):
             validate = "m:1"
         ).drop("doh_variant_name_right").rename({"hex_code": "cdc_hex"})
 
-        # Log warning for missing CDC parent lineage hex codes
-        ww_missing_cdc_hex = ww_cdc_hex_added.filter(
-            pl.col("cdc_parent_lineage").is_not_null() & pl.col("cdc_hex").is_null()
-        )
-        print(f"The following cdc-tracked parent lineages are missing hex codes in the external list (excel):",
-            ww_missing_cdc_hex["cdc_parent_lineage"].unique(),
-            "Will add the relevant hex code for the who name instead.")
         # Add the who hex codes
         ww_who_hex_added = ww_cdc_hex_added.join(
             hexcodes_who,
@@ -476,12 +464,27 @@ def make_map(workflow_type: str = "clinical", csv: bool = True):
 
     if workflow_type == 'wastewater': # add wastewater-specific variables:
         wastewater_df = add_wastewater_variables()
-        if csv == True:
-            wastewater_df.write_csv("results/ww_lineage_classifications.csv")
+        if csv is not None:
+            wastewater_df.write_csv(csv)
+        print("Successfully produced the wastewater lineage classification file! \n")
         return wastewater_df
 
-
 if __name__ == "__main__":
-    lineage_classifications = make_map(workflow_type='wastewater', csv=True)
+    # parse arguments passed to main.py
+    parser = argparse.ArgumentParser(description='This script creates the lineage classification file.')
+    parser.add_argument("-o",
+                        help="The filepath for the csv output (not required.)")
+    parser.add_argument("--workflow_type",
+                        help="This must be a string equal to either 'clinical' or 'wastewater'. If not provided, defaults to 'clinical'")
+    args=parser.parse_args()
+    # require a csv filepath when main.py run directly (-o flag)
+    if args.o is None:
+        raise TypeError("The output filepath was not provided. Please provide the file path for the csv output using the -o flag.")
+    if args.workflow_type is None:
+        args.workflow_type = 'clinical'
+        print("the workflow type was not specified with the --workflow_type flag. The clinical lineage "
+            "classification file will be produced by default.\n")
+    lineage_classifications = make_map(workflow_type=args.workflow_type, csv = args.o)
+
     print(lineage_classifications)
 
