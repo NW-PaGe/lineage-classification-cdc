@@ -208,13 +208,13 @@ def make_map(csv: str, workflow_type: str = "clinical"):
             .otherwise(pl.lit("active"))
             .alias("status")
         )
-
+        #remove leading * from withdrawn lineages
         notes_sliced = with_status.with_columns(
                 pl.when(pl.col("lineage_extracted").str.starts_with("*"))
                 .then(pl.col("lineage_extracted").str.slice(1, None))
                 .otherwise(pl.col("lineage_extracted"))
         )
-
+        # update withdrawn lineages to current designations
         corrector = pango_corrector.Corrector() # initialize pango corrector with key
         corrector.check_coverage() # make sure the key is current
         notes_with_target = corrector.correct(notes_sliced, input_col="lineage_extracted").rename({"redesignation": "status_target"})
@@ -419,6 +419,7 @@ def make_map(csv: str, workflow_type: str = "clinical"):
         return clinical_df
 
     def add_wastewater_variables():
+        # adding ww_variant_name with the following if/else logic
         ww_variant_name = base_df.with_columns(
             pl.when((pl.col("doh_variant_name")=="Other") & #when doh_variant_name = other
                     (pl.col("doh_variant_name").str.starts_with("X"))) # and query lineage starts with X
@@ -456,21 +457,21 @@ def make_map(csv: str, workflow_type: str = "clinical"):
                 ).alias("hex_code")
         )
         # final processing
-        return ww_hex_coalesced.drop(
+        ww_df =  ww_hex_coalesced.drop(
             "who_hex", "cdc_hex", "lineage_expanded", "query_lineage", "cdc_parent_lineage"
             ).fill_null("N/A").rename({"who_greek": "who_name"})
-
         # add a row for watewater_variant_name = "unreportable" so that the unreportable Freyja outputs
         # get assigned the grey hex code
-        # unreportables = pl.DataFrame({
-        #     "lineage_extracted": "unreportable",
-        #     "Description": "For variants Freyja detected below threshold",
-        #     "status": "",
-        #     "lineage"
-        #     "wastewater_variant_name": "unreportable",
-        #     "doh_variant_name": "unreportable"
-        # })
-        # with_unreportables = ww_variant_name.vstack(unreportables)
+        unreportables = pl.DataFrame({
+            "lineage_extracted": "unreportable",
+            "Description": "For variants Freyja detected below threshold",
+            "status": "",
+            "who_name": "N/A",
+            "doh_variant_name": "unreportable",
+            "wastewater_variant_name": "unreportable",
+            "hex_code": "#eeeeee",
+        })
+        return ww_df.extend(unreportables)
 
     if workflow_type == 'wastewater': # add wastewater-specific variables:
         wastewater_df = add_wastewater_variables()
@@ -497,4 +498,3 @@ if __name__ == "__main__":
     lineage_classifications = make_map(workflow_type=args.workflow_type, csv = args.o)
 
     print(lineage_classifications)
-
