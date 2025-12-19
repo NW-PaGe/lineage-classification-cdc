@@ -1,11 +1,20 @@
 import polars as pl
 from importlib import resources
 
+
 class Corrector:
     """Class representing a the corrector set of functions with corrector df"""
-    def __init__(self, corrector_file=resources.files('pango_corrector').joinpath('correction_key.csv')):
+
+    def __init__(
+        self,
+        corrector_file=resources.files("pango_corrector").joinpath(
+            "correction_key.csv"
+        ),
+    ):
         with resources.as_file(corrector_file) as corrector_path:
-            self.corrector_key = pl.read_csv(corrector_path, columns=["Lineage", "redesignation"])
+            self.corrector_key = pl.read_csv(
+                corrector_path, columns=["Lineage", "redesignation"]
+            )
 
     def check_coverage(self):
         """
@@ -13,19 +22,24 @@ class Corrector:
         and report any that are not present in the corrector .csv.
         """
         print("Checking coverage for withdrawn lineages by the translation csv \n")
-        lineage_notes_url = 'https://raw.githubusercontent.com/cov-lineages/pango-designation/refs/heads/master/lineage_notes.txt'
-        notes = pl.read_csv(lineage_notes_url, separator='\t')
+        lineage_notes_url = "https://raw.githubusercontent.com/cov-lineages/pango-designation/refs/heads/master/lineage_notes.txt"
+        notes = pl.read_csv(lineage_notes_url, separator="\t")
         withdrawn_notes = notes.filter(pl.col("Lineage").str.starts_with("*"))
-        withdrawn_notes_srch = withdrawn_notes.with_columns(pl.col("Lineage").str.slice(1, None))
-        withdrawn_join = withdrawn_notes_srch.join(self.corrector_key, on="Lineage", how="left")
-        withdrawn_notin_key = withdrawn_join.filter(pl.col('redesignation')=='null')
+        withdrawn_notes_srch = withdrawn_notes.with_columns(
+            pl.col("Lineage").str.slice(1, None)
+        )
+        withdrawn_join = withdrawn_notes_srch.join(
+            self.corrector_key, on="Lineage", how="left"
+        )
+        withdrawn_notin_key = withdrawn_join.filter(pl.col("redesignation") == "null")
         if withdrawn_notin_key.height > 0:
-            print(" There are withdrawn lineages not accounted for in the correction key. " \
-            "Check the latest lineage_notes.txt file and update the correction key. \n")
+            print(
+                " There are withdrawn lineages not accounted for in the correction key. "
+                "Check the latest lineage_notes.txt file and update the correction key. \n"
+            )
             print(withdrawn_notin_key)
         else:
             print(" The correction key is up to date with all withdrawn lineages. \n")
-
 
     def correct(self, input_value, input_col: str = None):
         """
@@ -46,22 +60,17 @@ class Corrector:
         # Case 2: input is a Polars Series → left join
         elif isinstance(input_value, pl.Series):
             temp = input_value.to_frame("Lineage")
-            result = temp.join(
-                self.corrector_key,
-                on="Lineage",
-                how="left"
-            )
+            result = temp.join(self.corrector_key, on="Lineage", how="left")
             return result["redesignation"]
         elif isinstance(input_value, pl.DataFrame):
-        # Ensure the input dataframe *has* a Lineage column
+            # Ensure the input dataframe *has* a Lineage column
             if input_col not in input_value.columns:
-                raise ValueError(f"DataFrame input must contain a", input_col, "column.")
+                raise ValueError("DataFrame input must contain a", input_col, "column.")
 
             return input_value.join(
-                self.corrector_key,
-                left_on=input_col,
-                right_on="Lineage",
-                how="left"
+                self.corrector_key, left_on=input_col, right_on="Lineage", how="left"
             )
         else:
-            raise TypeError("input_value must be a string, a pl.Series, or a pl.dataframe")
+            raise TypeError(
+                "input_value must be a string, a pl.Series, or a pl.dataframe"
+            )
