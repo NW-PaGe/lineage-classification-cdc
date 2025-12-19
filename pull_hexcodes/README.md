@@ -120,19 +120,44 @@ df = (
 df.write_csv("parsed_hexcodes.csv")
 ```
 
-## To run
+## To run the script
 
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/)
+You'll need to create a virtual environment (venv) to install the python packages,
+and then you can run the script (`main.py`).
 
-Make a .venv
+Follow the steps below to start. For more help on venvs and for setting this up to work in 
+VS Code or Positron, follow [this guide](https://nw-page.github.io/standards/gh/renv.html)
+
+1. Install [uv](https://docs.astral.sh/uv/getting-started/installation/)
+2. In a terminal, change directory to the `pull_hexcodes` folder
+
+```bash
+cd pull_hexcodes
+```
+3. Make a .venv
 
 ```bash
 uv venv
 ```
+4. Activate the venv
 
-Then install the packages with
+```bash
+.venv/Scripts/activate
+```
+or on linux:
+
+```bash
+source .venv/bin/activate
+```
+
+5. Then install the packages with
 
 ```bash
 uv sync
 ```
 
+6. Run the script
+
+```bash
+python main.py
+```
