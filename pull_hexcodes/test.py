@@ -2,11 +2,9 @@ import polars as pl
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
-with open("hexcode_rl.csv", 'r') as runninglist:
-    hexcodes_rl = pl.read_csv(runninglist).rename({"color": "hexcodes_manual"})
+hexcodes_rl = pl.read_csv("hexcode_rl.csv").rename({"color": "hexcodes_manual"})
 
-with open("parsed_hexcodes.csv", 'r') as parsed:
-    hexcodes_parsed = pl.read_csv(parsed).rename({"color": "hexcodes_parsed"})
+hexcodes_parsed = pl.read_csv("parsed_hexcodes.csv").rename({"color": "hexcodes_parsed"})
 
 hexcodes_diff = hexcodes_parsed.join(
     hexcodes_rl,
