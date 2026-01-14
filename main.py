@@ -123,56 +123,26 @@ def make_map(csv: str, workflow_type: str = "clinical"):
 
     lineage_notes = get_lineage_notes()
 
-    def get_cdc_tracked_variants():
-        # read in the list of cdc-tracked lineages
-        with open("variants_unique.txt", "r") as cdc_variants:
-            return pl.read_csv(
-                cdc_variants,
-                has_header=False,
-                new_columns=["cdc_lineage"],
-                separator="|",
-            )
-
-    cdc_variants = get_cdc_tracked_variants()
-
     def get_hex_codes():
         # read in the parsed hex codes from pull_hexcodes - pending pull_hexcodes working well
         # with open("pull_hexcodes/parsed_hexcodes.csv", 'r') as codes:
         #     parsed_hexcodes = pl.read_csv(codes)
 
         # read in the running list of hex codes
-        with open("Lineage_Color_Codes.xlsx", "rb") as hex_codes:
-            hexcodes_rl = pl.read_excel(
-                hex_codes,
-                sheet_name="NowCast Running List",
-                columns=["doh_variant_name", "who_name", "hex_code"],
-                schema_overrides={
-                    "doh_variant_name": pl.String,
-                    "who_name": pl.String,
-                    "hex_code": pl.String,
-                },
-            )
-        with open("Lineage_Color_Codes.xlsx", "rb") as hex_codes:
-            hexcodes_retired = pl.read_excel(
-                hex_codes,
-                sheet_name="Retired Variants on NowCast",
-                columns=["doh_variant_name", "who_name", "hex_code"],
-                schema_overrides={
-                    "doh_variant_name": pl.String,
-                    "who_name": pl.String,
-                    "hex_code": pl.String,
-                },
-            )
-        # concatenate and remove leading/trailing whitespace from excel file
-        hexcodes_dirty = pl.concat(
-            [hexcodes_rl, hexcodes_retired], how="vertical_relaxed"
-        )
-        hexcodes = hexcodes_dirty.with_columns(pl.col(pl.Utf8).str.strip_chars())
-        # break cdc hex codes and who hex codes into separate df's
-        hexcodes_cdc = hexcodes.filter(pl.col("who_name").is_null()).drop("who_name")
-        hexcodes_who = hexcodes.filter(pl.col("who_name").is_not_null()).drop(
-            "doh_variant_name"
-        )
+        with open("pull_hexcodes/results/final_augmented_runninglist.csv", "r") as hex_codes:
+            cdc_hexcodes_dirty = pl.read_csv(hex_codes)
+
+        hexcodes_clean = cdc_hexcodes_dirty.with_columns(pl.col(pl.Utf8).str.strip_chars())
+        hexcodes_cdc = hexcodes_clean.rename({
+            "variant": "doh_variant_name"
+        }).drop("source")
+        
+        with open("who_hex_codes.csv", "r") as hex_codes:
+            who_hexcodes_dirty = pl.read_csv(hex_codes)
+        hexcodes_who = who_hexcodes_dirty.with_columns(pl.col(pl.Utf8).str.strip_chars())
+
+        cdc_variants = pl.DataFrame({ "cdc_lineage": hexcodes_cdc["doh_variant_name"] })
+
         #################################
         ### Hex code quality control. ###
         #################################
@@ -208,14 +178,7 @@ def make_map(csv: str, workflow_type: str = "clinical"):
             "Checking for variants in the list of CDC-tracked variant list that are missing hex codes: \n"
         )
         cdc_variants_missing_hex_codes = (
-            pl.DataFrame({"cdc_lineages": cdc_variants})
-            .join(
-                hexcodes_cdc,
-                left_on="cdc_lineages",
-                right_on="doh_variant_name",
-                how="left",
-            )
-            .filter(pl.col("hex_code").is_null())
+            hexcodes_cdc.filter(pl.col("hex_code").is_null())
         )
         if cdc_variants_missing_hex_codes.shape[0] > 0:
             print(
@@ -225,9 +188,9 @@ def make_map(csv: str, workflow_type: str = "clinical"):
             )
         else:
             print("   Hex codes are present for all CDC-tracked variants. Go team! \n")
-        return hexcodes_cdc, hexcodes_who
+        return hexcodes_cdc, hexcodes_who, cdc_variants
 
-    hexcodes_cdc, hexcodes_who = get_hex_codes()
+    hexcodes_cdc, hexcodes_who, cdc_variants  = get_hex_codes()
 
     def build_base_df():
         #####
@@ -493,7 +456,7 @@ def make_map(csv: str, workflow_type: str = "clinical"):
         ww_variant_name = base_df.with_columns(
             pl.when(
                 (pl.col("doh_variant_name") == "Other")  # when doh_variant_name = other
-                & (pl.col("doh_variant_name").str.starts_with("X"))
+                & (pl.col("query_lineage").str.starts_with("X"))
             )  # and query lineage starts with X
             .then(pl.lit("Recombinant"))  # then assign as recombinant
             .when(
