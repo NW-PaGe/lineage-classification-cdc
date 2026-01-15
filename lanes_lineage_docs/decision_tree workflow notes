@@ -1,0 +1,29 @@
+Taking the prior python script lineage_class_revamp.py I applied what we discussed during our last meeting (fewer output files and potentially some kind of decision tree to reduce manual work):
+I uploaded an updated python script as decision_tree.py to the GitHub:
+Working Directory: 
+***REMOVED***\Sequence Data and Reporting\Data_Objects\Lineages
+
+Output files/folders:
+final_augmented_runninglist.csv: Updated running list that merges our running_list and Tableaus additions of variants/hex codes. Will show everything from the running list (source=running_list) and only approved new Tableau variants (source=tableau_approved)
+pending_additions.csv: Only the new Tableau variants not already in your running list will be within this file.
+qa_disagreements.csv: Does not overwrite running list. This is an FYI only sheet. Shows lineages that tableau and our running list disagree with on hex code designations. (optional; set flag False to disable)
+retired folder: The previous “final_augmented_runninglist” will be saved with the date to this folder so that we have access to previous versions of our lineage/hex code assignments.  
+
+Intended Workflow:
+1.	Run the python script:
+a.	It will compare the running list to the Tableau workbook upload 
+b.	Identify new lineages and write them to an output file called pending_additions.csv
+c.	Sets a "has_conflict" column so we know which lineages/hex codes need manual review:
+i.	If has_conflict = 1, Tableau assigned multiple colors in different places → treat as “needs human call”.
+ii.	If has_conflict = 2, ⁠Tableau assigned a hex code to this lineage, but Tableau itself did not assign that lineage consistently. The same lineage appears with more than one hex code inside the Tableau workbook. 
+2.	Manually review pending_additions.csv 
+a.	For each row of lineages/hex codes you will input in the “approve” column as:
+i.	yes → you agree this lineage + hex should be added
+ii.	no (or leave blank) → do not add it
+iii.	Save your updates to “pending_additions.csv” file (do not change name of file)
+3.	Rerun the python script
+a.	It will re-read pending_additions.csv
+b.	Append rows where the “approve” column == yes (ignores no or blank cells)
+c.	Writes the updated final_augmented_runninglist.csv
+d.	Pushes the “old” final_augmented_runninglist to the retired folder with an appended date. 
+
