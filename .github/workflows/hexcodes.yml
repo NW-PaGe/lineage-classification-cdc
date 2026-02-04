@@ -1,0 +1,32 @@
+name: Run hexcode pull
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Runs every Monday at 00:00 UTC
+    - cron: "0 0 * * 1"
+  
+jobs:
+  weekly-task:
+    runs-on: ubuntu-latest
+    steps:
+      # checkout repo
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.9.9" # pin a specific version is best practice
+          enable-cache: true
+      
+      - name: Change to hex folder
+        run: |
+          cd pull_hexcodes
+      
+      - name: Run the script
+        run: uv run main.py
+
+      # Commit just the parsed hexcodes csv file
+      - uses: EndBug/add-and-commit@v9
+        with: 
+          add: 'parsed_hexcodes.csv'
