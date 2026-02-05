@@ -19,11 +19,9 @@ jobs:
           version: "0.9.9" # pin a specific version is best practice
           enable-cache: true
       
-      - name: Change to hex folder
-        run: cd pull_hexcodes
-      
-      - name: Run the script
+      - name: run pull_hexcodes
         run: uv run main.py
+        working-directory: ./pull_hexcodes
 
       # Commit just the parsed hexcodes csv file
       - uses: EndBug/add-and-commit@v9
