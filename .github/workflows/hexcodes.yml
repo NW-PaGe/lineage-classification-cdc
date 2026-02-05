@@ -26,4 +26,4 @@ jobs:
       # Commit just the parsed hexcodes csv file
       - uses: EndBug/add-and-commit@v9
         with: 
-          add: 'parsed_hexcodes.csv'
+          add: 'pull_hexcodes/parsed_hexcodes.csv'
