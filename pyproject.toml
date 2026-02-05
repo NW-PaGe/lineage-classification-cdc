@@ -7,5 +7,6 @@ requires-python = ">=3.13"
 dependencies = [
     "fastexcel>=0.18.0",
     "pango-aliasor>=0.3.0",
+    "pathlib>=1.0.1",
     "polars>=1.35.2",
 ]
