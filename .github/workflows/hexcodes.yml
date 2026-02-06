@@ -23,7 +23,13 @@ jobs:
         run: uv run main.py
         working-directory: ./pull_hexcodes
 
+      - name: run clinical LCF workflow
+        run: uv run main.py -o lineage_class.csv
+      
+      - name: run wastewater LCF workflow
+        run: uv run main.py -o lineage_class_wastewater.csv
+      
       # Commit just the parsed hexcodes csv file
       - uses: EndBug/add-and-commit@v9
         with: 
-          add: 'pull_hexcodes/parsed_hexcodes.csv'
+          add: 'pull_hexcodes/parsed_hexcodes.csv lineage_class.csv lineage_class_wastewater.csv'
