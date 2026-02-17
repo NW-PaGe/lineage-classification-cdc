@@ -21,7 +21,6 @@ class Corrector:
         Check to see if any withdrawn lineages have been added to the lineage_notes.txt.
         and report any that are not present in the corrector .csv.
         """
-        print("Checking coverage for withdrawn lineages by the translation csv \n")
         lineage_notes_url = "https://raw.githubusercontent.com/cov-lineages/pango-designation/refs/heads/master/lineage_notes.txt"
         notes = pl.read_csv(lineage_notes_url, separator="\t")
         withdrawn_notes = notes.filter(pl.col("Lineage").str.starts_with("*"))
@@ -33,13 +32,9 @@ class Corrector:
         )
         withdrawn_notin_key = withdrawn_join.filter(pl.col("redesignation") == "null")
         if withdrawn_notin_key.height > 0:
-            print(
-                " There are withdrawn lineages not accounted for in the correction key. "
-                "Check the latest lineage_notes.txt file and update the correction key. \n"
-            )
-            print(withdrawn_notin_key)
+            print(f"There are withdrawn lineages not accounted for in the correction key. Check the latest lineage_notes.txt file for {withdrawn_notin_key} and update the correction key.")
         else:
-            print(" The correction key is up to date with all withdrawn lineages. \n")
+            print("The correction key is up to date with all withdrawn lineages.")
 
     def correct(self, input_value, input_col: str = None):
         """
