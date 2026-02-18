@@ -291,3 +291,4 @@ KP.2.14.1,KP.2.14,redesignated,Redesignated as KP.2.14: there's no good evidence
 PC.2,LF.7.9,redesignated,"Redesignated as LF.7.9, S:L441R, S:H445P, Wales/Scotland, from sars-cov-2-variants/lineage-proposals#2395"
 MC.34,unreportable,withdrawn,"Withdrawn: Alias of B.1.1.529.2.86.1.1.11.1.3.1.1.34, A29716T (29716 in UTR masked by pangolin)"
 XFG.20,unreportable,withdrawn,Withdrawn: C10615T (didn't realize it was a dropout branch of XFG.3 when designating)
+XFG.3.31.1,unreportable,withdrawn,Withdrawn: only one sequence had S:K554E

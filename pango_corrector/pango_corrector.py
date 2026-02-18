@@ -30,9 +30,10 @@ class Corrector:
         withdrawn_join = withdrawn_notes_srch.join(
             self.corrector_key, on="Lineage", how="left"
         )
-        withdrawn_notin_key = withdrawn_join.filter(pl.col("redesignation") == "null")
+        withdrawn_notin_key = withdrawn_join.filter(pl.col("redesignation").is_null())
+        withdrawn_list = list(withdrawn_notin_key["Lineage"])
         if withdrawn_notin_key.height > 0:
-            print(f"There are withdrawn lineages not accounted for in the correction key. Check the latest lineage_notes.txt file for {withdrawn_notin_key} and update the correction key.")
+            print(f"There are withdrawn lineages not accounted for in the correction key. Check the latest lineage_notes.txt file for {withdrawn_list} and update the correction key.")
         else:
             print("The correction key is up to date with all withdrawn lineages.")
 
@@ -58,6 +59,8 @@ class Corrector:
             result = temp.join(self.corrector_key, on="Lineage", how="left")
             return result["redesignation"]
         elif isinstance(input_value, pl.DataFrame):
+            if input_col is None:
+                raise ValueError("Please provide the input column with the input_col argument")
             # Ensure the input dataframe *has* a Lineage column
             if input_col not in input_value.columns:
                 raise ValueError("DataFrame input must contain a", input_col, "column.")
