@@ -3,7 +3,7 @@ name: Run hexcode pull and prod LCF
 on:
   push:
     paths:
-      - 'final_augmented_runninglist.csv'
+      - 'pull_hexcodes/final_augmented_runninglist.csv'
   
 jobs:
   weekly-task:
