@@ -1,10 +1,9 @@
 name: Run hexcode pull and prod LCF
 
 on:
-  workflow_dispatch:
-  schedule:
-    # Runs every Monday at 00:00 UTC
-    - cron: "0 0 * * 1"
+  push:
+    paths:
+      - 'final_augmented_runninglist.csv'
   
 jobs:
   weekly-task:
@@ -18,18 +17,14 @@ jobs:
         with:
           version: "0.9.9" # pin a specific version is best practice
           enable-cache: true
-      
-      - name: run pull_hexcodes
-        run: uv run decision_tree.py
-        working-directory: ./pull_hexcodes
 
       - name: run clinical LCF workflow
         run: uv run main.py -o lineage_class.csv
       
       - name: run wastewater LCF workflow
-        run: uv run main.py --workflow_type wastewater -o lineage_class_wastewater.csv
+        run: uv run main.py --workflow-type wastewater -o lineage_class_wastewater.csv
       
-      # Commit just the parsed hexcodes csv file
+      # Commit just the lineage classification files
       - uses: EndBug/add-and-commit@v9
         with: 
-          add: 'pull_hexcodes/final_augmented_runninglist.csv lineage_class.csv lineage_class_wastewater.csv lineage_class_wastewater.csv'
+          add: 'lineage_class.csv lineage_class_wastewater.csv'
