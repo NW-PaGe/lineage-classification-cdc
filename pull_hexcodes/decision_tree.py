@@ -31,16 +31,13 @@ from bs4 import BeautifulSoup
 # Config
 # -----------------------------
 TABLEAU_URL = "https://public.tableau.com/workbooks/Variant_Proportions_Plus_Nowcasting_PREVIEW.twb"
-BASE_DIR = Path(
-    r"Y:\Confidential\DCHS\CDE\01_Linelists_Cross Coverage\Novel CoV\01 - Epi"
-    r"\Sequence Data and Reporting\Data_Objects\Lineages"
-)
-RUNNINGLIST_CSV = "Y:/Confidential/DCHS/CDE/01_Linelists_Cross Coverage/Novel CoV/01 - Epi/Sequence Data and Reporting/Data_Objects/Lineages/runninglist_lineage_hexcodes.csv"
+BASE_DIR = Path(".")  # current repo directory
+RUNNINGLIST_CSV = BASE_DIR / "runninglist_lineage_hexcodes.csv"
 OUT_FINAL = BASE_DIR / "final_augmented_runninglist.csv"
 OUT_PENDING = BASE_DIR / "pending_additions.csv"
 OUT_QA_DISAGREE = BASE_DIR / "qa_disagreements.csv"
 RETIRED_DIR = BASE_DIR / "retired"
-WRITE_QA_DISAGREEMENTS = True  # set False to reduce outputs further
+WRITE_QA_DISAGREEMENTS = True
 DROP_VALUES = {"", "Top", "VOC"}
 
 # Tableau-derived additions should look like lineages; running list can include
