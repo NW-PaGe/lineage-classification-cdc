@@ -173,3 +173,78 @@ def test_best_parent():
             output_col="parent"
         )
         assert isinstance(result, pl.DataFrame)
+
+def test_make_map():
+
+    def test_get_lineage_notes():
+
+        def test_get_lineage_notes_returns_correct_headers():
+            notes = get_lineage_notes()
+            assert "lineage_extracted" in notes.columns
+            assert "status" in notes.columns
+            assert "description" in notes.columns
+        
+        def test_get_lineage_notes_returns_pl_DataFrame():
+            notes = get_lineage_notes()
+            assert isinstance(notes, pl.DataFrame)
+
+    def test_get_hex_codes_path():
+
+        def test_get_hex_codes_path_returns_codes():
+            codes = get_hex_codes_path()
+            assert "variant" in codes.columns
+            assert "hex_code" in codes.columns
+        
+    def test_clean_cdc_hex_codes():
+        codes = pl.DataFrame({
+            "variant": ["BA.1"],
+            "hex_code": ["ABCDEF "]
+            })
+        clean_codes = clean_cdc_hex_codes(codes)
+        assert "doh_variant_name" in clean_codes.columns
+        assert "ABCDEF" in clean_codes['hex_code']
+    
+    def test_define_unique_cdc_variants():
+        codes = pl.DataFrame({
+            "variant": ["BA.1", "BA.2"],
+            "hex_code": ["ABCDEF", "GHIJKL"]
+            })
+        cdc_vars = define_unique_cdc_variants(codes)
+        assert ["BA.1", "BA.2"] in cdc_vars
+        assert isinstance(cdc_vars, pl.Series)
+    
+    def test_read_who_hexcodes():
+        who_codes = read_who_hexcodes()
+        assert ["who_name", "hex_code"] in who_codes.columns
+        assert isinstance(who_codes, pl.DataFrame)
+
+    def test_qc_hex_codes():
+
+        def test_qc_hex_codes_pass(capsys: pytest.CaptureFixture[str]):
+            codes = pl.DataFrame({
+                "variant": ["BA.1", "BA.2"],
+                "hex_code": ["ABCDEF", "GHIJKL"]
+            })
+            qc_hex_codes(codes)
+            captured = capsys.readouterr()
+            assert captured == "   Hex codes are present for all CDC-tracked variants. Go team! \n"
+        
+        def test_qc_hex_codes_detects_dup_vars(capsys: pytest.CaptureFixture[str]):
+            codes = pl.DataFrame({
+                "variant": ["BA.1", "BA.1"],
+                "hex_code": ["ABCDEF", "GHIJKL"]
+            })
+            qc_hex_codes(codes)
+            captured = capsys.readouterr()
+            assert "    Duplicates were found in the list of CDC hex codes. Duplicates will be removed, and first value kept: \n" in captured
+            assert print(codes) in captured
+
+        def test_qc_hex_codes_detects_missing_codes():
+            codes = pl.DataFrame({
+                "variant": ["BA.1", "BA.2"],
+                "hex_code": ["ABCDEF", NULL]
+            })
+            qc_hex_codes(codes)
+            captured = capsys.readouterr()
+            assert " The following cdc-tracked variants are missing hex codes \n" in captured
+            assert "BA.2" in captured
