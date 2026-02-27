@@ -4,3 +4,4 @@ curl https://raw.githubusercontent.com/NW-PaGe/lineage-classification-cdc/refs/h
 NOW=$(date +"%Y-%m-%d_%H-%M-%S")
 diff legacy.csv new.csv | echo > "full_diff_$NOW.csv"
 diff --brief legacy.csv new.csv | echo > "only_discrepancies_$NOW.csv"
+echo "diff files were produced"
