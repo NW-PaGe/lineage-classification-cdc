@@ -1,0 +1,20 @@
+name: Test Workflows
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+  push: # Run on all pushes
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.6.5" # pin a specific version is best practice
+          enable-cache: true
+
+      - name: Run tests
+        # For example, using `pytest`
+        run: uv run pytest -vv
