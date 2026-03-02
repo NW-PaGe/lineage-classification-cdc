@@ -1,39 +1,149 @@
 # lineage-classification-cdc
-This repo contains code for generating the SARS-CoV-2 lineage classification files (clinical and wastewater flavors) used in Wa DOH workflows. 
+This repo contains code for generating the SARS-CoV-2 lineage classification files (clinical and wastewater flavors) used in WA DOH workflows.
 
 ## Purpose
-The aim of this project is to provide a comprehensive mapping file for analyses involving SARS-CoV-2 lineages. It is especially useful for aligning outputs with pango lineages being tracked by CDC. This makes synchronizing standard SARS-CoV-2 epidemiological reporting with the CDC Nowcast a breeze. Take your pango lineages, and map them to same taxonomic bins as the national-level reporting, with the same hex color codes used in the NowCast. Additionally, pango lineages can be mapped to WHO Variant of Concerns.
+The aim of this project is to provide a comprehensive mapping file for analyses involving SARS-CoV-2 lineages.
 
-This repo includes modules with more general use cases, such as:
-- `pull_hexcodes` for scraping NowCast results for CDC-tracked lineages and associated color hex codes.
-- `pango_corrector` for updating withdrawn pango lineages to the most current redesignations.
+This allows:
+- Mapping Pango lineages → CDC NowCast tracking groups
+- Assigning official CDC hex color codes
+- Assigning WHO variant labels
+- Producing standardized lineage classification files used in WA DOH clinical and wastewater pipelines
+
+## Repository Structure
+Folder / File	Purpose
+
+`main.py`	Generates lineage classification outputs
+
+`pull_hexcodes/decision_tree.py`	Pulls CDC NowCast lineage list and manages approvals
+
+`pull_hexcodes/final_augmented_runninglist.csv`	MASTER lineage approval file (source of truth)
+
+`pull_hexcodes/pending_additions.csv`	New lineages requiring review
+
+`who_hex_codes.csv`	WHO fallback color codes
+
+`results/`	Output location
 
 ## Requirements
-This repo is structured as a python package, and uses `uv` to handle dependencies and virtual environments. `uv` is all that is required to run these analyses. See the [documentation](https://github.com/astral-sh/uv) for installation instructions.
+This repo uses uv for dependency management.
+
+Install uv:
+https://github.com/astral-sh/uv
 
 Clone the repository:
 ```bash
 git clone https://github.com/NW-PaGe/lineage-classification-cdc.git
+cd lineage-classification-cdc
 ```
-## Run the Analysis
+## Key Concept: Source of Truth
+The file:
 
-### Generate the Mapping File with BASH Command
-After installing `uv`, run the analysis from the main directory.
+`pull_hexcodes/final_augmented_runninglist.csv` is the authoritative lineage list.
+All outputs are generated from this file.
+New CDC lineages must be approved before they propagate downstream.
 
-For a short explanation of arguments:
-```bash
-uv run main.py --help
+## Weekly Update Workflow (CRITICAL)
+This section documents the complete workflow required to update lineage classifications.
+
+#### Step 1 — Pull latest repository updates
 ```
-To generate the clinical lineage classification file in a csv format:
-```bash
-uv run main.py --workflow_type wastewater -o results/ww_lineage_classifications.csv
+git checkout hexcode-pull-rework
+git pull
 ```
-### Coming soon - import this project as a python library and have dataframes generated seamlessly within your python workflow.
 
-## Output
+#### Step 2 — Pull latest CDC NowCast lineage list
+```
+uv run pull_hexcodes/decision_tree.py
+```
+This produces:
 
-When running `main.py` directly, outputs will appear where as specified by the `-o` flag at command line.
+| File               | Purpose                                                                                            |
+| -------------------- |-------------------------------------------------------------------------------------------------- |
+| `pending_additions.csv`  | New CDC lineages needing approval.  |
+| `final_augmented_runninglist.csv`        | Updated lineage mapping.                                                  |
+| `qa_disagreements.csv`             | Conflicts requiring manual review.|
 
+
+#### Step 3 — Review and approve new lineages
+
+Open: `pull_hexcodes/pending_additions.csv`
+Approve by answering yes/no in `approve1 column of sheet. 
+Save file. 
+
+#### Step 4 — Apply Approvals
+Run again:
+```
+uv run pull_hexcodes/decision_tree.py
+```
+This moves approved lineages into: `pull_hexcodes/final_augmented_runninglist.csv`
+
+Approved lineages will NOT appear again in pending_additions.csv.
+
+#### Step 5 — Generate clinical lineage classifications
+Run:
+```
+uv run main.py \
+  --workflow-type clinical \
+  --lineage-list pull_hexcodes/final_augmented_runninglist.csv \
+  -o results/lineage_classifications.csv
+```
+Output: `results/lineage_classifications.csv`
+
+#### Step 6 — Generate wastewater lineage classifications
+Run:
+```
+uv run main.py \
+  --workflow-type wastewater \
+  --lineage-list pull_hexcodes/final_augmented_runninglist.csv \
+  -o results/ww_lineage_classifications.csv
+```
+Output: `results/ww_lineage_classifications.csv`
+
+#### Step 7 — Commit updates
+Run:
+```
+git add pull_hexcodes/final_augmented_runninglist.csv
+git add pull_hexcodes/pending_additions.csv
+
+git commit -m "Weekly CDC lineage update"
+
+git push
+```
+GitHub Actions will regenerate downstream artifacts automatically.
+
+#### Important Behavior
+##### Pending additions do NOT repopulate after approval
+
+Once a lineage is approved and added to `final_augmented_runninglist.csv` it becomes permanent and will not appear in `pending_additions.csv` again.
+
+##### If a lineage is NOT approved
+
+It will remain in `pending_additions.csv` until approved.
+
+This prevents accidental propagation of unreviewed CDC lineage disaggregations.
+
+## Running manually (quick reference)
+Pull CDC updates:
+```
+uv run pull_hexcodes/decision_tree.py
+```
+
+Generate clinical:
+```
+uv run main.py \
+  --workflow-type clinical \
+  --lineage-list pull_hexcodes/final_augmented_runninglist.csv \
+  -o results/lineage_classifications.csv
+```
+
+Generate wastewater:
+```
+uv run main.py \
+  --workflow-type wastewater \
+  --lineage-list pull_hexcodes/final_augmented_runninglist.csv \
+  -o results/ww_lineage_classifications.csv
+```
 ## Data Dictionary
 
 The final product is a csv file that contains the following variables:
