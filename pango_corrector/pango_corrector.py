@@ -21,7 +21,6 @@ class Corrector:
         Check to see if any withdrawn lineages have been added to the lineage_notes.txt.
         and report any that are not present in the corrector .csv.
         """
-        print("Checking coverage for withdrawn lineages by the translation csv \n")
         lineage_notes_url = "https://raw.githubusercontent.com/cov-lineages/pango-designation/refs/heads/master/lineage_notes.txt"
         notes = pl.read_csv(lineage_notes_url, separator="\t")
         withdrawn_notes = notes.filter(pl.col("Lineage").str.starts_with("*"))
@@ -31,15 +30,12 @@ class Corrector:
         withdrawn_join = withdrawn_notes_srch.join(
             self.corrector_key, on="Lineage", how="left"
         )
-        withdrawn_notin_key = withdrawn_join.filter(pl.col("redesignation") == "null")
+        withdrawn_notin_key = withdrawn_join.filter(pl.col("redesignation").is_null())
+        withdrawn_list = list(withdrawn_notin_key["Lineage"])
         if withdrawn_notin_key.height > 0:
-            print(
-                " There are withdrawn lineages not accounted for in the correction key. "
-                "Check the latest lineage_notes.txt file and update the correction key. \n"
-            )
-            print(withdrawn_notin_key)
+            print(f"There are withdrawn lineages not accounted for in the correction key. Check the latest lineage_notes.txt file for {withdrawn_list} and update the correction key.")
         else:
-            print(" The correction key is up to date with all withdrawn lineages. \n")
+            print("The correction key is up to date with all withdrawn lineages.")
 
     def correct(self, input_value, input_col: str = None):
         """
@@ -63,6 +59,8 @@ class Corrector:
             result = temp.join(self.corrector_key, on="Lineage", how="left")
             return result["redesignation"]
         elif isinstance(input_value, pl.DataFrame):
+            if input_col is None:
+                raise ValueError("Please provide the input column with the input_col argument")
             # Ensure the input dataframe *has* a Lineage column
             if input_col not in input_value.columns:
                 raise ValueError("DataFrame input must contain a", input_col, "column.")
