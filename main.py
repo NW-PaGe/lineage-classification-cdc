@@ -1,6 +1,7 @@
 import polars as pl
 import fastexcel
 import argparse
+from pathlib import Path
 from pango_corrector import pango_corrector
 from pango_aliasor.aliasor import Aliasor
 
@@ -96,7 +97,7 @@ def best_parent(
 ##############################################
 
 
-def make_map(csv: str, workflow_type: str = "clinical"):
+def make_map(csv: str, workflow_type: str = "clinical", lineage_list: Path = 'pull_hexcodes/final_augmented_runninglist.csv'):
     """
     main() contains the whole workflow, from downloading the latest lineage designations,
     correcting withdrawn lineages, de-aliasing lineage names, etc.
@@ -122,32 +123,43 @@ def make_map(csv: str, workflow_type: str = "clinical"):
         return notes.rename({"Lineage": "lineage_extracted"})
 
     lineage_notes = get_lineage_notes()
+    
+    def get_hex_codes_path(lineage_list: 'Path'):
+        line_list_path = Path(lineage_list)
+        if line_list_path.is_file():
+            cdc_hexcodes_dirty = pl.read_csv(line_list_path)
+            print(f'Lineage list with hexcodes sourced from {lineage_list}')
+            return cdc_hexcodes_dirty
+        else: raise FileNotFoundError(f"The lineage list file {lineage_list} could not be found.")
 
-    def get_hex_codes():
-        # read in the parsed hex codes from pull_hexcodes - pending pull_hexcodes working well
-        # with open("pull_hexcodes/parsed_hexcodes.csv", 'r') as codes:
-        #     parsed_hexcodes = pl.read_csv(codes)
+    cdc_hexcodes_dirty = get_hex_codes_path(lineage_list)
 
-        # read in the running list of hex codes
-        with open("pull_hexcodes/results/final_augmented_runninglist.csv", "r") as hex_codes:
-            cdc_hexcodes_dirty = pl.read_csv(hex_codes)
-
+    def clean_cdc_hex_codes(cdc_hexcodes_dirty):
         hexcodes_clean = cdc_hexcodes_dirty.with_columns(pl.col(pl.Utf8).str.strip_chars())
         hexcodes_cdc = hexcodes_clean.rename({
             "variant": "doh_variant_name"
         }).drop("source")
-        
-        with open("who_hex_codes.csv", "r") as hex_codes:
-            who_hexcodes_dirty = pl.read_csv(hex_codes)
-        hexcodes_who = who_hexcodes_dirty.with_columns(pl.col(pl.Utf8).str.strip_chars())
+        return hexcodes_cdc
+    hexcodes_cdc = clean_cdc_hex_codes(cdc_hexcodes_dirty)
 
+    def define_unique_cdc_variants(hexcodes_cdc):
         cdc_variants = pl.DataFrame({ "cdc_lineage": hexcodes_cdc["doh_variant_name"] })
+        return cdc_variants
+    cdc_variants = define_unique_cdc_variants(hexcodes_cdc)
 
-        #################################
-        ### Hex code quality control. ###
-        #################################
-        # If duplicate rows exist for a cdc lineage, then print
-        # the duplicates and filter out repeats.
+    def read_who_hexcodes():
+        who_hexcodes_dirty = pl.read_csv("who_hex_codes.csv")
+        hexcodes_who = who_hexcodes_dirty.with_columns(pl.col(pl.Utf8).str.strip_chars())
+        return hexcodes_who
+    hexcodes_who = read_who_hexcodes()
+
+    def qc_hex_codes(hexcodes_cdc):
+        """
+        Hex code quality control.
+        If duplicate rows exist for a cdc lineage, then print
+        the duplicates and filter out repeats.
+        """
+
         print("Checking for duplicates of cdc-tracked lineage hex codes... \n")
         cdc_hex_dups = hexcodes_cdc.filter(
             hexcodes_cdc["doh_variant_name"].is_duplicated()
@@ -160,18 +172,6 @@ def make_map(csv: str, workflow_type: str = "clinical"):
             hexcodes_cdc = hexcodes_cdc.unique(subset="doh_variant_name", keep="first")
         else:
             print("  All CDC-tracked lineages have unique hex codes - go team! \n")
-
-        # same QC step for who hex codes:
-        print("Checking for duplicates of who-designation hex codes... \n")
-        who_hex_dups = hexcodes_who.filter(hexcodes_who["who_name"].is_duplicated())
-        if who_hex_dups.shape[0] > 0:
-            print(
-                "    Duplicates were found in the list of who hex codes. Duplicates will be removed, and first value kept: \n"
-            )
-            print(who_hex_dups)
-            hexcodes_who = hexcodes_who.unique(subset="who_name", keep="first")
-        else:
-            print(" All WHO lineages have unique hex codes - go team! \n")
 
         # check for CDC-tracked lineages that are missing hex codes:
         print(
@@ -188,14 +188,9 @@ def make_map(csv: str, workflow_type: str = "clinical"):
             )
         else:
             print("   Hex codes are present for all CDC-tracked variants. Go team! \n")
-        return hexcodes_cdc, hexcodes_who, cdc_variants
-
-    hexcodes_cdc, hexcodes_who, cdc_variants  = get_hex_codes()
+    qc_hex_codes(hexcodes_cdc)
 
     def build_base_df():
-        #####
-        # 3 #
-        #####
         # add status
         with_status = lineage_notes.with_columns(
             pl.when(pl.col("lineage_extracted").str.starts_with("*"))
@@ -224,9 +219,6 @@ def make_map(csv: str, workflow_type: str = "clinical"):
             output_col="status_target",
         )
 
-        #####
-        # 2 #
-        #####
         aliasor = Aliasor()  # initialize pango_aliasor
         notes_w_expanded_lineages = polar_aliasor(
             notes_w_expanded_target,
@@ -236,9 +228,7 @@ def make_map(csv: str, workflow_type: str = "clinical"):
             func="uncompress",
             output_col="lineage_expanded",
         )
-        #####
-        # 4 #
-        #####
+
         notes_expanded_united = notes_w_expanded_lineages.with_columns(
             pl.when(pl.col("status_target").is_null())
             .then("lineage_expanded")
@@ -246,9 +236,6 @@ def make_map(csv: str, workflow_type: str = "clinical"):
             .alias("query_lineage")
         ).drop("status_target")
 
-        #####
-        # 5 #
-        #####
         # expand list of CDC tracked lineages, if not already expanded
         cdc_variants_expanded = polar_aliasor(
             df=cdc_variants,
@@ -257,9 +244,6 @@ def make_map(csv: str, workflow_type: str = "clinical"):
             output_col="cdc_lineage_expanded",
         )
 
-        #####
-        # 6 #
-        #####
         # for the complete data set notes_expanded_inited
         # find the closest parent lineage in the expanded
         # cdc lineages
@@ -546,9 +530,11 @@ if __name__ == "__main__":
     )
     parser.add_argument("-o", help="The filepath for the csv output (not required.)")
     parser.add_argument(
-        "--workflow_type",
+        "--workflow-type",
         help="This must be a string equal to either 'clinical' or 'wastewater'. If not provided, defaults to 'clinical'",
     )
+    parser.add_argument("--lineage-list",
+                        help="Optional. This must be a path to a .csv file containing the list of pango lineages and hexcodes used for binning. Defaults to pull_hexcodes/final_augmented_runninglist.csv")
     args = parser.parse_args()
     # require a csv filepath when main.py run directly (-o flag)
     if args.o is None:
@@ -561,6 +547,9 @@ if __name__ == "__main__":
             "the workflow type was not specified with the --workflow_type flag. The clinical lineage "
             "classification file will be produced by default.\n"
         )
-    lineage_classifications = make_map(workflow_type=args.workflow_type, csv=args.o)
+    if args.lineage_list is None:
+        args.lineage_list = "pull_hexcodes/final_augmented_runninglist.csv"
+
+    lineage_classifications = make_map(workflow_type=args.workflow_type, csv=args.o, lineage_list=args.lineage_list)
 
     print(lineage_classifications)
