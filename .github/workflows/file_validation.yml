@@ -19,4 +19,4 @@ jobs:
       # Commit the diff'd csv files
       - uses: EndBug/add-and-commit@v9
         with: 
-          add: 'output_validation/full_diff*.csv output_validation/only_discrepancies*.csv'
+          add: '.'
