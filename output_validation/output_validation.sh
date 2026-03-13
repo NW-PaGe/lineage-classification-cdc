@@ -1,7 +1,7 @@
 #!/bin/bash
 NOW=$(date +"%Y-%m-%d")
 mkdir $NOW
-curl https://raw.githubusercontent.com/NW-PaGe/lineage_classifications/refs/heads/DOH-ALS6303-patch-13/data/lineage_classifications.csv > $NOW/legacy_clinical.csv
+curl https://raw.githubusercontent.com/NW-PaGe/lineage_classifications/refs/heads/main/data/lineage_classifications.csv > $NOW/legacy_clinical.csv
 curl https://raw.githubusercontent.com/NW-PaGe/lineage_classifications/refs/heads/main/data/ww_lineage_classifications.csv > $NOW/legacy_wastewater.csv
 
 diff $NOW/legacy_clinical.csv ../lineage_class.csv | echo > $NOW/full_diff_clinical_$NOW.csv
