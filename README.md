@@ -103,11 +103,11 @@ Output: `results/ww_lineage_classifications.csv`
 #### Step 7 — Commit updates
 Run:
 ```
-git add pull_hexcodes/final_augmented_runninglist.csv
-git add pull_hexcodes/pending_additions.csv
+git add final_augmented_runninglist.csv
+git add pending_additions.csv
+git add qa_disagreements.csv
 
 git commit -m "Weekly CDC lineage update"
-
 git push
 ```
 GitHub Actions will regenerate downstream artifacts automatically.
