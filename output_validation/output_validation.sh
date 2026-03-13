@@ -1,7 +1,11 @@
 #!/bin/bash
-curl https://raw.githubusercontent.com/NW-PaGe/lineage_classifications/refs/heads/DOH-ALS6303-patch-13/data/lineage_classifications.csv > legacy.csv
-curl https://raw.githubusercontent.com/NW-PaGe/lineage-classification-cdc/refs/heads/hexcode-pull-rework/lineage_class.csv?token=GHSAT0AAAAAADM22WN7HYP5Q7OBS522PK722NCFLRQ > new.csv
-NOW=$(date +"%Y-%m-%d_%H-%M-%S")
-diff legacy.csv new.csv | echo > "full_diff_$NOW.csv"
-diff --brief legacy.csv new.csv | echo > "only_discrepancies_$NOW.csv"
-echo "diff files were produced"
+NOW=$(date +"%Y-%m-%d")
+mkdir $NOW
+curl https://raw.githubusercontent.com/NW-PaGe/lineage_classifications/refs/heads/main/data/lineage_classifications.csv > $NOW/legacy_clinical.csv
+curl https://raw.githubusercontent.com/NW-PaGe/lineage_classifications/refs/heads/main/data/ww_lineage_classifications.csv > $NOW/legacy_wastewater.csv
+
+diff $NOW/legacy_clinical.csv ../lineage_class.csv | echo > $NOW/full_diff_clinical_$NOW.csv
+diff --brief $NOW/legacy_clinical.csv ../lineage_class.csv | echo > $NOW/discrepancies_clinical_$NOW.csv
+diff $NOW/legacy_wastewater.csv ../lineage_class_wastewater.csv | echo > $NOW/full_diff_wastewater_$NOW.csv
+diff --brief $NOW/legacy_wastewater.csv ../lineage_class_wastewater.csv | echo > $NOW/discrepancies_wastewater_$NOW.csv
+echo "diff files were produced in the $NOW directory"
