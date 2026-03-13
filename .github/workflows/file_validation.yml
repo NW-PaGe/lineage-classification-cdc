@@ -3,8 +3,7 @@ name: Run hexcode pull
 on:
   workflow_dispatch:
   schedule:
-    # Runs every Wednesday at 00:00 UTC
-    - cron: "0 0 * * 3"
+    - cron: "0 0 * * 6"
   
 jobs:
   file-validation:
@@ -20,4 +19,4 @@ jobs:
       # Commit the diff'd csv files
       - uses: EndBug/add-and-commit@v9
         with: 
-          add: 'output_validation/full_diff*.csv output_validation/only_discrepancies*.csv'
+          add: '.'
