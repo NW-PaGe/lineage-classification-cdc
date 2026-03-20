@@ -31,7 +31,10 @@ from bs4 import BeautifulSoup
 # Config
 # -----------------------------
 TABLEAU_URL = "https://public.tableau.com/workbooks/Variant_Proportions_Plus_Nowcasting_PREVIEW.twb"
-BASE_DIR = Path(".")  # current repo directory
+from pathlib import Path
+
+BASE_DIR = Path(__file__).parent
+
 RUNNINGLIST_CSV = BASE_DIR / "runninglist_lineage_hexcodes.csv"
 OUT_FINAL = BASE_DIR / "final_augmented_runninglist.csv"
 OUT_PENDING = BASE_DIR / "pending_additions.csv"
