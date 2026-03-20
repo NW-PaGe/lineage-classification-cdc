@@ -1,58 +1,64 @@
 # lineage-classification-cdc
 This repo contains code for generating the SARS-CoV-2 lineage classification files (clinical and wastewater flavors) used in WA DOH workflows.
 
-## Purpose
-The aim of this project is to provide a comprehensive mapping file for analyses involving SARS-CoV-2 lineages.
+---
 
-This allows:
-- Mapping Pango lineages → CDC NowCast tracking groups
-- Assigning official CDC hex color codes
-- Assigning WHO variant labels
-- Producing standardized lineage classification files used in WA DOH clinical and wastewater pipelines
+## Purpose
+This project generates standardized lineage classification files by:
+
+- Mapping Pango lineages → CDC NowCast tracking groups  
+- Assigning CDC hex color codes  
+- Assigning WHO variant labels  
+- Producing clinical + wastewater lineage classification outputs  
+
+---
 
 ## Repository Structure
-Folder / File	Purpose
 
-`main.py`	Generates lineage classification outputs
+| Path | Purpose |
+|------|--------|
+| `main.py` | Generates lineage classification outputs |
+| `pull_hexcodes/decision_tree.py` | Pulls CDC NowCast data + manages approvals |
+| `pull_hexcodes/final_augmented_runninglist.csv` | Source of Truth |
+| `pull_hexcodes/pending_additions.csv` | New lineages needing review |
+| `pull_hexcodes/qa_disagreements.csv` | Conflicts requiring review |
+| `results/` | Output files (not committed) |
 
-`pull_hexcodes/decision_tree.py`	Pulls CDC NowCast lineage list and manages approvals
-
-`pull_hexcodes/final_augmented_runninglist.csv`	MASTER lineage approval file (source of truth)
-
-`pull_hexcodes/pending_additions.csv`	New lineages requiring review
-
-`who_hex_codes.csv`	WHO fallback color codes
-
-`results/`	Output location
+---
 
 ## Requirements
-This repo uses uv for dependency management.
 
-Install uv:
+This repo uses `uv` for dependency management.
+
+Install:
 https://github.com/astral-sh/uv
 
-Clone the repository:
+Clone:
 ```bash
 git clone https://github.com/NW-PaGe/lineage-classification-cdc.git
 cd lineage-classification-cdc
 ```
 ## Key Concept: Source of Truth
 The file:
-
 `pull_hexcodes/final_augmented_runninglist.csv` is the authoritative lineage list.
-All outputs are generated from this file.
-New CDC lineages must be approved before they propagate downstream.
+- This is the only file used to generate outputs
+- Approved lineages are stored here permanently
+- Everything downstream depends on this file
 
-## Weekly Update Workflow (CRITICAL)
-This section documents the complete workflow required to update lineage classifications.
+  
+## Weekly Update Workflow
+This section documents the complete workflow required to update lineage classifications on a weekly basis.
 
-#### Step 1 — Pull latest repository updates
+#### Step 1 — Start from main
 ```
-git checkout hexcode-pull-rework
-git pull
+git checkout main
+git pull origin main
 ```
-
-#### Step 2 — Pull latest CDC NowCast lineage list
+#### Step 2- Create a branch for your updates
+```
+git checkout -b weekly-hex-update-YYYY-MM-DD
+```
+#### Step 3 — Pull latest CDC NowCast lineage list
 ```
 uv run pull_hexcodes/decision_tree.py
 ```
@@ -60,18 +66,18 @@ This produces:
 
 | File               | Purpose                                                                                            |
 | -------------------- |-------------------------------------------------------------------------------------------------- |
-| `pending_additions.csv`  | New CDC lineages needing approval.  |
-| `final_augmented_runninglist.csv`        | Updated lineage mapping.                                                  |
-| `qa_disagreements.csv`             | Conflicts requiring manual review.|
+| `pull_hexcodes/pending_additions.csv`  | New CDC lineages needing approval.  |
+| `pull_hexcodes/final_augmented_runninglist.csv`        | Updated lineage mapping.                                                  |
+| `pull_hexcodes/qa_disagreements.csv`             | Conflicts requiring manual review.|
 
 
-#### Step 3 — Review and approve new lineages
+#### Step 4 — Review and approve new lineages
 
 Open: `pull_hexcodes/pending_additions.csv`
 Approve by answering yes/no in `approve1 column of sheet. 
 Save file. 
 
-#### Step 4 — Apply Approvals
+#### Step 5 — Apply Approvals
 Run again:
 ```
 uv run pull_hexcodes/decision_tree.py
@@ -80,7 +86,7 @@ This moves approved lineages into: `pull_hexcodes/final_augmented_runninglist.cs
 
 Approved lineages will NOT appear again in pending_additions.csv.
 
-#### Step 5 — Generate clinical lineage classifications
+#### Step 6 — Generate clinical output
 Run:
 ```
 uv run main.py \
@@ -88,9 +94,8 @@ uv run main.py \
   --lineage-list pull_hexcodes/final_augmented_runninglist.csv \
   -o results/lineage_classifications.csv
 ```
-Output: `results/lineage_classifications.csv`
 
-#### Step 6 — Generate wastewater lineage classifications
+#### Step 7 — Generate wastewater lineage classifications
 Run:
 ```
 uv run main.py \
@@ -98,52 +103,49 @@ uv run main.py \
   --lineage-list pull_hexcodes/final_augmented_runninglist.csv \
   -o results/ww_lineage_classifications.csv
 ```
-Output: `results/ww_lineage_classifications.csv`
 
-#### Step 7 — Commit updates
+#### Step 8 — Commit required files
 Run:
 ```
-git add final_augmented_runninglist.csv
-git add pending_additions.csv
-git add qa_disagreements.csv
+git add pull_hexcodes/decision_tree.py
+git add pull_hexcodes/final_augmented_runninglist.csv
+git add pull_hexcodes/pending_additions.csv
+git add pull_hexcodes/qa_disagreements.csv
 
 git commit -m "Weekly CDC lineage update"
-git push
+git push origin weekly-hex-update-YYYY-MM-DD
 ```
 GitHub Actions will regenerate downstream artifacts automatically.
 
-#### Important Behavior
-##### Pending additions do NOT repopulate after approval
+#### Step 9 — Open Pull Request
+- Go to GitHub
+- Open PR → main
+- Tag reviewer(s) (Pauline and Dan)
 
-Once a lineage is approved and added to `final_augmented_runninglist.csv` it becomes permanent and will not appear in `pending_additions.csv` again.
-
-##### If a lineage is NOT approved
-
-It will remain in `pending_additions.csv` until approved.
-
-This prevents accidental propagation of unreviewed CDC lineage disaggregations.
-
-## Running manually (quick reference)
-Pull CDC updates:
+#### Step 10 — After Merge
+After your merge has been successful, run this locally: 
 ```
-uv run pull_hexcodes/decision_tree.py
+git checkout main
+git pull origin main
+git branch -d weekly-hex-update-YYYY-MM-DD
 ```
 
-Generate clinical:
-```
-uv run main.py \
-  --workflow-type clinical \
-  --lineage-list pull_hexcodes/final_augmented_runninglist.csv \
-  -o results/lineage_classifications.csv
-```
+#### Important Rules
+##### Do NOT Commit:
+- `results/`
+- `pull_hexcodes/retired/`
+- `nowcast_workbook.twb`
+  
+##### Pending behavior:
+- Approved → moves to running list → NEVER appears again
+- Not approved → stays in pending
 
-Generate wastewater:
-```
-uv run main.py \
-  --workflow-type wastewater \
-  --lineage-list pull_hexcodes/final_augmented_runninglist.csv \
-  -o results/ww_lineage_classifications.csv
-```
+##### Automation Rules:
+- Automation is safe ONLY if:
+  - pending_additions.csv has no unapproved rows
+  - qa_disagreements.csv is empty
+- Otherwise → human review required
+
 ## Data Dictionary
 
 The final product is a csv file that contains the following variables:
