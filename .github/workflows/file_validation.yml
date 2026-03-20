@@ -1,4 +1,4 @@
-name: Run hexcode pull
+name: Validate Files
 
 on:
   workflow_dispatch:
