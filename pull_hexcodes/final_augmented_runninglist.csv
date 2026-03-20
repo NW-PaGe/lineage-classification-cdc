@@ -99,6 +99,7 @@ XBB.1.16.11,#D37295,running_list
 XBB.1.16.15,#E3B5FA,running_list
 XBB.1.16.17,#8F8CB0,running_list
 XBB.1.16.6,#5AA350,running_list
+XBB.1.42.1,#75D1A3,tableau_approved
 XBB.1.42.2,#75D1A3,running_list
 XBB.1.5,#3F51B5,running_list
 XBB.1.5.1,#1A237E,running_list
@@ -107,6 +108,7 @@ XBB.1.5.59,#FFBE7D,running_list
 XBB.1.5.68,#86BCB6,running_list
 XBB.1.5.70,#46783C,running_list
 XBB.1.5.72,#254220,running_list
+XBB.1.5.77,#254220,tableau_approved
 XBB.1.9.1,#304FFE,running_list
 XBB.1.9.2,#536DFE,running_list
 XBB.2.3,#F7BCDF,running_list
@@ -119,5 +121,12 @@ XEK,#B6992D,running_list
 XEQ,#7660F1,running_list
 XFC,#B66920,running_list
 XFG,#4E6EA1,running_list
+XFG.1,#5A667F,tableau_approved
+XFG.1.1,#B6B600,tableau_approved
+XFG.14.1,#6C9BBA,tableau_approved
+XFG.2.5.1,#FFAA00,tableau_approved
+XFG.6,#5555FF,tableau_approved
+XFV,#DD6731,tableau_approved
+XFY,#8855E1,tableau_approved
+XFZ,#9D3B2E,tableau_approved
 unreportable,#EEEEEE,running_list
-XFG.2.5.1,#FFAA00
