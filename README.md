@@ -39,13 +39,19 @@ git clone https://github.com/NW-PaGe/lineage-classification-cdc.git
 cd lineage-classification-cdc
 ```
 ## Key Concept: Source of Truth
-The file:
-`pull_hexcodes/final_augmented_runninglist.csv` is the authoritative lineage list.
-- This is the only file used to generate outputs
-- Approved lineages are stored here permanently
-- Everything downstream depends on this file
+The pipeline generates two primary output files:
 
-  
+- `results/lineage_classifications.csv (clinical)`
+- `results/ww_lineage_classifications.csv (wastewater)`
+
+- They are automatically generated and committed via GitHub Actions (or manually if running locally)
+
+### Important
+The `results/` directory must exist prior to running the pipeline
+If running locally, create it with:
+```
+mkdir -p results
+```  
 ## Weekly Update Workflow
 This section documents the complete workflow required to update lineage classifications on a weekly basis.
 
@@ -111,6 +117,8 @@ git add pull_hexcodes/decision_tree.py
 git add pull_hexcodes/final_augmented_runninglist.csv
 git add pull_hexcodes/pending_additions.csv
 git add pull_hexcodes/qa_disagreements.csv
+git add results/lineage_classifications.csv
+git add results/ww_lineage_classifications.csv
 
 git commit -m "Weekly CDC lineage update"
 git push origin weekly-hex-update-YYYY-MM-DD
@@ -132,7 +140,6 @@ git branch -d weekly-hex-update-YYYY-MM-DD
 
 #### Important Rules
 ##### Do NOT Commit:
-- `results/`
 - `pull_hexcodes/retired/`
 - `nowcast_workbook.twb`
   
