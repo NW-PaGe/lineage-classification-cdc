@@ -277,10 +277,6 @@ def check_pending_approvals(lines):
 
         return
 
-    ###########################################
-    # DETECT APPROVAL COLUMN
-    ###########################################
-
     approve_col = None
 
     for col in ["approve1", "approve"]:
@@ -296,10 +292,6 @@ def check_pending_approvals(lines):
             "Could not find approval column.",
             2
         )
-
-    ###########################################
-    # FIND UNAPPROVED
-    ###########################################
 
     approval_values = (
         pending[approve_col]
@@ -366,20 +358,6 @@ def check_qa_disagreements(lines):
 
     qa = pd.read_csv(QA_DISAGREEMENTS)
 
-    ###########################################
-    # OPTIONAL MOCK TEST
-    ###########################################
-    #
-    # Uncomment to test failure path
-    #
-    # pause_for_review(
-    #     lines,
-    #     "Mock QA disagreement triggered.",
-    #     3
-    # )
-    #
-    ###########################################
-
     if len(qa) > 0:
 
         log(lines, "")
@@ -413,7 +391,9 @@ def check_qa_disagreements(lines):
             3
         )
 
-    log(lines, "✅ No QA disagreements found.")
+    else:
+
+        log(lines, "✅ No QA disagreements found.")
 
 
 ###############################################
@@ -426,9 +406,8 @@ def validate_outputs(lines):
 
     required_common = {
         "lineage_extracted",
-        "description",
+        "Description",
         "status",
-        "doh_variant_name",
         "who_name",
         "hex_code",
     }
