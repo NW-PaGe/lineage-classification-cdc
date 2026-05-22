@@ -38,17 +38,41 @@ def write_report(lines):
     REPORT.write_text("\n".join(lines) + "\n")
 
 
-def fail_and_exit(lines, message, exit_code=1):
-    log(lines, message)
+def pause_for_review(lines, message, exit_code=1):
+
+    log(lines, "")
+    log(lines, f"🟡 STATUS: PAUSED FOR HUMAN REVIEW — {message}")
+    log(lines, "")
+
+    log(lines, "## FINAL STATUS")
+    log(lines, "🟡 PAUSED FOR HUMAN REVIEW")
+
     write_report(lines)
+
+    sys.exit(exit_code)
+
+
+def fail_and_exit(lines, message, exit_code=1):
+
+    log(lines, "")
+    log(lines, f"❌ FAILED: {message}")
+    log(lines, "")
+
+    log(lines, "## FINAL STATUS")
+    log(lines, "❌ PIPELINE FAILED")
+
+    write_report(lines)
+
     sys.exit(exit_code)
 
 
 def check_file_exists(lines, path):
+
     if not path.exists():
+
         fail_and_exit(
             lines,
-            f"❌ FAILED: Missing expected file `{path}`",
+            f"Missing expected file `{path}`",
             1
         )
 
@@ -71,21 +95,24 @@ def run_cmd(lines, step_name, cmd):
     )
 
     if result.stdout:
+
         log(lines, "\nSTDOUT:")
         log(lines, "```")
         log(lines, result.stdout.strip())
         log(lines, "```")
 
     if result.stderr:
+
         log(lines, "\nSTDERR:")
         log(lines, "```")
         log(lines, result.stderr.strip())
         log(lines, "```")
 
     if result.returncode != 0:
+
         fail_and_exit(
             lines,
-            f"\n❌ FAILED: {step_name}",
+            step_name,
             result.returncode
         )
 
@@ -117,11 +144,20 @@ def validate_pending_additions(lines):
     missing = required_cols - set(pending.columns)
 
     if missing:
+
         fail_and_exit(
             lines,
-            f"❌ FAILED: Missing required columns: {sorted(missing)}",
+            f"Missing required columns: {sorted(missing)}",
             10
         )
+
+    ###########################################
+    # VALIDATION COUNTS
+    ###########################################
+
+    missing_variant_count = 0
+    duplicate_count = 0
+    invalid_hex_count = 0
 
     ###########################################
     # NULL VARIANTS
@@ -129,18 +165,31 @@ def validate_pending_additions(lines):
 
     null_variants = pending[pending["variant"].isna()]
 
-    if len(null_variants) > 0:
+    missing_variant_count = len(null_variants)
 
-        log(
-            lines,
-            "⚠️ WARNING: Rows with missing variant names detected."
-        )
+    if missing_variant_count > 0:
+
+        log(lines, "")
+        log(lines, "⚠️ Rows with missing variant names detected.")
+        log(lines, "")
 
         log(lines, "Affected rows:")
-
         log(lines, "```")
         log(lines, null_variants.to_string(index=False))
         log(lines, "```")
+
+        log(lines, "")
+        log(lines, "NEXT ACTION REQUIRED:")
+        log(lines, "1. Review pending_additions.csv")
+        log(lines, "2. Determine why variant values are missing")
+        log(lines, "3. Correct upstream lineage assignment issue")
+        log(lines, "4. Re-run automation")
+
+        pause_for_review(
+            lines,
+            "Rows with missing variant names detected.",
+            11
+        )
 
     ###########################################
     # DUPLICATE VARIANTS
@@ -150,15 +199,15 @@ def validate_pending_additions(lines):
         pending["variant"].duplicated(keep=False)
     ]
 
-    if len(duplicates) > 0:
+    duplicate_count = len(duplicates)
 
-        log(
-            lines,
-            "⚠️ WARNING: Duplicate variants detected."
-        )
+    if duplicate_count > 0:
+
+        log(lines, "")
+        log(lines, "⚠️ Duplicate variants detected.")
+        log(lines, "")
 
         log(lines, "Affected rows:")
-
         log(lines, "```")
         log(lines, duplicates.to_string(index=False))
         log(lines, "```")
@@ -174,19 +223,36 @@ def validate_pending_additions(lines):
         .str.match(HEX_PATTERN)
     ]
 
-    if len(invalid_hex) > 0:
+    invalid_hex_count = len(invalid_hex)
 
-        log(
-            lines,
-            "⚠️ WARNING: Invalid hex codes detected."
-        )
+    if invalid_hex_count > 0:
+
+        log(lines, "")
+        log(lines, "⚠️ Invalid hex codes detected.")
+        log(lines, "")
 
         log(lines, "Affected rows:")
-
         log(lines, "```")
         log(lines, invalid_hex.to_string(index=False))
         log(lines, "```")
 
+        pause_for_review(
+            lines,
+            "Invalid hex codes detected.",
+            12
+        )
+
+    ###########################################
+    # VALIDATION SUMMARY
+    ###########################################
+
+    log(lines, "")
+    log(lines, "Validation summary:")
+    log(lines, f"- Missing variant rows: {missing_variant_count}")
+    log(lines, f"- Duplicate variants: {duplicate_count}")
+    log(lines, f"- Invalid hex codes: {invalid_hex_count}")
+
+    log(lines, "")
     log(lines, "✅ Pending additions validation complete.")
 
 
@@ -203,10 +269,12 @@ def check_pending_approvals(lines):
     pending = pd.read_csv(PENDING)
 
     if pending.empty:
+
         log(
             lines,
             "✅ pending_additions.csv is empty. No approvals needed."
         )
+
         return
 
     ###########################################
@@ -225,7 +293,7 @@ def check_pending_approvals(lines):
 
         fail_and_exit(
             lines,
-            "❌ FAILED: Could not find approval column.",
+            "Could not find approval column.",
             2
         )
 
@@ -247,6 +315,8 @@ def check_pending_approvals(lines):
 
     if len(unapproved) > 0:
 
+        log(lines, "")
+
         log(
             lines,
             f"🟡 STATUS: PAUSED FOR HUMAN REVIEW — "
@@ -254,15 +324,9 @@ def check_pending_approvals(lines):
         )
 
         log(lines, "")
-
         log(lines, "NEXT ACTION REQUIRED:")
-
         log(lines, "1. Open pull_hexcodes/pending_additions.csv")
-
-        log(
-            lines,
-            f"2. Review lineage rows"
-        )
+        log(lines, "2. Review lineage rows")
 
         log(
             lines,
@@ -272,16 +336,20 @@ def check_pending_approvals(lines):
         log(lines, "4. Re-run the automation")
 
         log(lines, "")
-
-        log(lines, "Unapproved rows:")
+        log(lines, "Showing first 10 unapproved rows:")
 
         log(lines, "```")
-        log(lines, unapproved.to_string(index=False))
+        log(lines, unapproved.head(10).to_string(index=False))
         log(lines, "```")
 
-        write_report(lines)
+        log(lines, "")
+        log(lines, "See lineage_update_run_report.md for full details.")
 
-        sys.exit(2)
+        pause_for_review(
+            lines,
+            "Pending lineage approvals required.",
+            2
+        )
 
     log(lines, "✅ All pending lineage additions are approved.")
 
@@ -301,19 +369,20 @@ def check_qa_disagreements(lines):
     ###########################################
     # OPTIONAL MOCK TEST
     ###########################################
-    # Uncomment temporarily to test failure path
     #
-    # log(
+    # Uncomment to test failure path
+    #
+    # pause_for_review(
     #     lines,
-    #     "🟡 STATUS: PAUSED FOR HUMAN REVIEW — mock QA disagreement"
+    #     "Mock QA disagreement triggered.",
+    #     3
     # )
     #
-    # write_report(lines)
-    # sys.exit(3)
-
     ###########################################
 
     if len(qa) > 0:
+
+        log(lines, "")
 
         log(
             lines,
@@ -322,28 +391,27 @@ def check_qa_disagreements(lines):
         )
 
         log(lines, "")
-
         log(lines, "NEXT ACTION REQUIRED:")
-
         log(lines, "1. Open pull_hexcodes/qa_disagreements.csv")
-
         log(lines, "2. Review disagreement rows")
-
         log(lines, "3. Resolve lineage conflicts")
-
         log(lines, "4. Re-run the automation")
 
         log(lines, "")
-
-        log(lines, "QA disagreement rows:")
+        log(lines, "Showing first 10 QA disagreement rows:")
 
         log(lines, "```")
-        log(lines, qa.to_string(index=False))
+        log(lines, qa.head(10).to_string(index=False))
         log(lines, "```")
 
-        write_report(lines)
+        log(lines, "")
+        log(lines, "See lineage_update_run_report.md for full details.")
 
-        sys.exit(3)
+        pause_for_review(
+            lines,
+            "QA disagreement rows detected.",
+            3
+        )
 
     log(lines, "✅ No QA disagreements found.")
 
@@ -382,7 +450,7 @@ def validate_outputs(lines):
 
             fail_and_exit(
                 lines,
-                f"❌ FAILED: `{path}` missing columns: {sorted(missing)}",
+                f"`{path}` missing columns: {sorted(missing)}",
                 4
             )
 
@@ -390,7 +458,7 @@ def validate_outputs(lines):
 
             fail_and_exit(
                 lines,
-                f"❌ FAILED: `{path}` has zero rows.",
+                f"`{path}` has zero rows.",
                 5
             )
 
@@ -415,6 +483,7 @@ def summarize(lines):
     approve_col = None
 
     for col in ["approve1", "approve"]:
+
         if col in pending.columns:
             approve_col = col
             break
@@ -439,6 +508,7 @@ def summarize(lines):
     log(lines, f"QA disagreements: {len(qa)}")
 
     if CLINICAL_OUT.exists():
+
         clinical = pd.read_csv(CLINICAL_OUT)
 
         log(
@@ -447,6 +517,7 @@ def summarize(lines):
         )
 
     if WW_OUT.exists():
+
         ww = pd.read_csv(WW_OUT)
 
         log(
@@ -577,11 +648,9 @@ def main():
     ###########################################
 
     log(lines, "\n## FINAL STATUS")
-
     log(lines, "✅ SUCCESS: Pipeline completed successfully.")
 
     log(lines, "")
-
     log(lines, "Updated files:")
 
     log(lines, f"- `{RUNNING_LIST}`")
