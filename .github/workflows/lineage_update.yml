@@ -1,0 +1,127 @@
+name: Weekly Lineage Classification Update
+
+on:
+  schedule:
+    - cron: "0 16 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  lineage-update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Run lineage update automation
+        id: run_pipeline
+        continue-on-error: true
+        run: |
+          uv run python scripts/run_lineage_update.py
+
+      - name: Upload run report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lineage-update-run-report
+          path: lineage_update_run_report.md
+
+      - name: Create issue if manual review is needed
+        if: steps.run_pipeline.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require("fs");
+            let report = "No run report was generated.";
+            if (fs.existsSync("lineage_update_run_report.md")) {
+              report = fs.readFileSync("lineage_update_run_report.md", "utf8");
+            }
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: "Lineage classification update needs manual review",
+              body: [
+                "The weekly lineage classification automation stopped before publishing outputs.",
+                "",
+                "Please review the run report below and complete the manual action listed.",
+                "",
+                "Common reasons:",
+                "- New lineages need approval in `pull_hexcodes/pending_additions.csv`",
+                "- `pull_hexcodes/qa_disagreements.csv` contains rows",
+                "- Output validation failed",
+                "",
+                "After resolving, re-run the workflow manually from the GitHub Actions tab.",
+                "",
+                "---",
+                report
+              ].join("\n")
+            });
+
+            core.setFailed("Manual review required.");
+
+      - name: Create update branch
+        if: steps.run_pipeline.outcome == 'success'
+        run: |
+          BRANCH="automated-lineage-update-$(date +%Y-%m-%d)"
+          echo "BRANCH=$BRANCH" >> $GITHUB_ENV
+          git checkout -b "$BRANCH"
+
+      - name: Commit changes
+        if: steps.run_pipeline.outcome == 'success'
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git add pull_hexcodes/final_augmented_runninglist.csv
+          git add pull_hexcodes/pending_additions.csv
+          git add pull_hexcodes/qa_disagreements.csv
+          git add results/lineage_classifications.csv
+          git add results/ww_lineage_classifications.csv
+          git add lineage_update_run_report.md
+
+          if git diff --cached --quiet; then
+            echo "NO_CHANGES=true" >> $GITHUB_ENV
+          else
+            git commit -m "Automated weekly lineage classification update"
+            git push origin "$BRANCH"
+          fi
+
+      - name: Open pull request
+        if: steps.run_pipeline.outcome == 'success' && env.NO_CHANGES != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branch = process.env.BRANCH;
+
+            await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: "Automated weekly lineage classification update",
+              head: branch,
+              base: "main",
+              body: [
+                "Automated weekly lineage classification update.",
+                "",
+                "Updated files:",
+                "- `pull_hexcodes/final_augmented_runninglist.csv`",
+                "- `pull_hexcodes/pending_additions.csv`",
+                "- `pull_hexcodes/qa_disagreements.csv`",
+                "- `results/lineage_classifications.csv`",
+                "- `results/ww_lineage_classifications.csv`",
+                "- `lineage_update_run_report.md`",
+                "",
+                "Please review the run report before merging."
+              ].join("\n")
+            });

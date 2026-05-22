@@ -1,0 +1,34 @@
+name: Validate Lineage Classification Outputs
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Validate outputs regenerate cleanly
+        run: |
+          mkdir -p results
+
+          uv run main.py \
+            --workflow-type clinical \
+            --lineage-list pull_hexcodes/final_augmented_runninglist.csv \
+            -o results/lineage_classifications.csv
+
+          uv run main.py \
+            --workflow-type wastewater \
+            --lineage-list pull_hexcodes/final_augmented_runninglist.csv \
+            -o results/ww_lineage_classifications.csv
