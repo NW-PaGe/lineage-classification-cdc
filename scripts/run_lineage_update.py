@@ -185,11 +185,11 @@ def validate_pending_additions(lines):
         log(lines, "3. Correct upstream lineage assignment issue")
         log(lines, "4. Re-run automation")
 
-        #pause_for_review(
-            #lines,
-            #"Rows with missing variant names detected.",
-            #11
-        #)
+        pause_for_review(
+            lines,
+            "Rows with missing variant names detected.",
+            11
+        )
 
     ###########################################
     # DUPLICATE VARIANTS
