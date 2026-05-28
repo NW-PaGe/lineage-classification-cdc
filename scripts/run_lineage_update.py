@@ -621,6 +621,18 @@ def check_pending_approvals(
         ]
     )
 
+    if approved_count == 0:
+
+        pause_for_review(
+            lines,
+            (
+                "No approved lineages detected. "
+                "Possible approval loss or "
+                "corrupted pending_additions.csv."
+            ),
+            20,
+        )
+    
     rejected_count = len(
         pending[
             approval_values.isin(
@@ -999,6 +1011,30 @@ def main():
     check_file_exists(
         lines,
         RUNNING_LIST,
+    )
+
+    running = pd.read_csv(
+        RUNNING_LIST,
+        keep_default_na=False,
+    )
+
+    running_count = len(running)
+
+    if running_count < 100:
+
+        pause_for_review(
+            lines,
+            (
+                f"Running list unexpectedly small "
+                f"({running_count} rows). "
+                f"Possible lineage loss detected."
+            ),
+            21,
+        )
+
+    log(
+        lines,
+        f"Running list size check passed ({running_count} rows)."
     )
 
     ###########################################
