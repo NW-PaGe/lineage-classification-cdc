@@ -138,6 +138,126 @@ git pull origin main
 git branch -d weekly-hex-update-YYYY-MM-DD
 ```
 
+## Automation Branch
+
+Current automation development is maintained on the
+`automation-lineage-workflow` branch.
+
+This branch contains workflow validation, archival safeguards,
+approval-state tracking, and automated output generation.
+
+Changes should be reviewed through a pull request before being merged into
+`main`.
+
+## Operational Automation Workflow
+
+The repository contains an operational wrapper that automates the weekly lineage update workflow while preserving required human review checkpoints.
+
+Run:
+
+```bash
+uv run python scripts/run_lineage_update.py
+```
+
+### What the Automation Does
+
+The workflow performs the following steps:
+
+1. Pull latest CDC Tableau/NowCast lineage information
+2. Generate updated lineage review files
+3. Validate pending lineage additions
+4. Validate lineage names and hex codes
+5. Verify approval status
+6. Generate updated running list
+7. Generate clinical lineage classifications
+8. Generate wastewater lineage classifications
+9. Validate output files
+10. Generate a run report
+
+### Safety Checks
+
+The workflow includes the following safeguards:
+
+* Missing lineage detection
+* Duplicate lineage detection
+* Invalid hex code detection
+* Approval-loss protection
+* Running-list shrink protection
+* Automatic archival of:
+
+  * `pull_hexcodes/pending_additions.csv`
+  * `pull_hexcodes/final_augmented_runninglist.csv`
+
+### Source of Truth
+
+The curated file:
+
+```text
+pull_hexcodes/final_augmented_runninglist.csv
+```
+
+remains the source of truth.
+
+QA disagreement reports are informational and do not overwrite curated lineage assignments.
+
+### Human Review Requirements
+
+Human review is still required when:
+
+* New lineages appear in `pending_additions.csv`
+* New lineage approvals must be assigned
+* CDC introduces new lineage-to-hex-code assignments requiring evaluation
+
+The workflow does not automatically approve new lineages.
+
+### Approval Behavior
+
+| Status | Behavior                           |
+| ------ | ---------------------------------- |
+| `yes`  | Added to the running list          |
+| `no`   | Retained as intentionally rejected |
+| blank  | Considered pending review          |
+
+Approved lineages will not reappear for approval.
+
+Rejected lineages remain documented but do not block execution.
+
+### QA Disagreement Behavior
+
+When CDC Tableau hex codes differ from the curated running list:
+
+* The disagreement is written to `qa_disagreements.csv`
+* The workflow reports the disagreement
+* The workflow continues execution
+* The curated running list remains the source of truth
+
+### Automatic Archival
+
+Before overwriting lineage review files, the workflow automatically archives previous versions to:
+
+```text
+pull_hexcodes/retired/
+```
+
+This provides recovery capability if approvals are accidentally removed or lineage assignments require rollback.
+
+### Files Not Intended for Commit
+
+Do not commit:
+
+* `pull_hexcodes/retired/`
+* `nowcast_workbook.twb`
+
+### Recommended Workflow
+
+For routine lineage updates:
+
+```bash
+uv run python scripts/run_lineage_update.py
+```
+
+Review any flagged lineage approvals or QA disagreement reports, then commit the updated lineage files and outputs through a standard pull request workflow.
+
 #### Important Rules
 ##### Do NOT Commit:
 - `pull_hexcodes/retired/`
