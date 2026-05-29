@@ -5,6 +5,23 @@ import zipfile
 
 def main():
     print("Hello from test-hex-pull!")
+
+    def get_variant_list():
+        url = "https://data.cdc.gov/resource/jr58-6ysp.json"
+        query = {
+            "$query": "SELECT DISTINCT variant"
+        }
+        response = requests.get(url=url, params=query)
+        if response.status_code == 200:
+            print("dataset was pulled")
+            data = pl.from_dicts(response.json())
+            unique_vars = data.unique()
+        else:
+            print(f"Error: {response.status_code}")
+        return unique_vars
+
+    lineage_list = get_variant_list()
+
     url = "https://public.tableau.com/workbooks/Variant_Proportions_Plus_Nowcasting_PREVIEW.twb"
 
     response = requests.get(url)
