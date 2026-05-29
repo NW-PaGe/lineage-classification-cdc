@@ -60,8 +60,9 @@ def main():
     # create Polars DataFrame
     df = (
         pl.DataFrame(data, schema=["variant", "color"], orient='row')
-        # remove rows where the variant is Top or VOC, those don't appear to be variants
-        .filter(~pl.col('variant').is_in(["Top","VOC"]))
+        # remove rows where the variant is not in the lineage list pulled from dataset
+        .filter(pl.col('variant').is_in(lineage_list["variant"].to_list()))
+
     )
 
     print(df)
