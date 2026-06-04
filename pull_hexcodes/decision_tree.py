@@ -802,6 +802,55 @@ def archive_previous_final(
     )
 
 
+def archive_pending() -> None:
+
+    pending_path = Path(OUT_PENDING)
+
+    if not pending_path.exists():
+        return
+
+    retired_path = Path(RETIRED_DIR)
+
+    retired_path.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    today = date.today().isoformat()
+
+    base = (
+        retired_path
+        / f"{pending_path.stem}_{today}{pending_path.suffix}"
+    )
+
+    candidate = base
+
+    i = 1
+
+    while candidate.exists():
+
+        candidate = (
+            retired_path
+            / (
+                f"{pending_path.stem}_"
+                f"{today}_{i}"
+                f"{pending_path.suffix}"
+            )
+        )
+
+        i += 1
+
+    shutil.copy2(
+        str(pending_path),
+        str(candidate),
+    )
+
+    print(
+        f"Archived previous "
+        f"{pending_path.name} -> {candidate}"
+    )
+
+
 def main():
 
     #########################################
@@ -939,6 +988,8 @@ def main():
         pending,
         "variant",
     )
+
+    archive_pending()
 
     pending.write_csv(
         OUT_PENDING
