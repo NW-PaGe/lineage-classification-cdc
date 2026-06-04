@@ -307,11 +307,6 @@ def load_running_list(
         .filter(pl.col("hex_code") != "")
     )
 
-    out = filter_valid_variants(
-        out,
-        "variant",
-    )
-
     return (
         out.unique(
             subset=["variant"],
@@ -1109,11 +1104,6 @@ def main():
             keep="first",
         )
         .sort("variant")
-    )
-
-    final = filter_valid_variants(
-        final,
-        "variant",
     )
 
     #########################################
