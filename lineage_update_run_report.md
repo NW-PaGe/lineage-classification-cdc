@@ -1,5 +1,5 @@
 # Lineage Classification Update Run Report
-Run time: 2026-05-22T12:53:19
+Run time: 2026-06-05T08:47:33
 
 This report records automation steps, warnings, validation checks, and required manual review actions.
 
@@ -9,14 +9,15 @@ Command: `uv run pull_hexcodes/decision_tree.py`
 STDOUT:
 ```
 Downloading Tableau workbook…
-Archived previous final_augmented_runninglist.csv -> /home/als6303/lineage-classification-cdc/pull_hexcodes/retired/final_augmented_runninglist_2026-05-22_9.csv
-Loaded running list: 117 variants
+Archived previous pending_additions.csv -> /home/als6303/lineage-classification-cdc/pull_hexcodes/retired/pending_additions_2026-06-05.csv
+Archived previous final_augmented_runninglist.csv -> /home/als6303/lineage-classification-cdc/pull_hexcodes/retired/final_augmented_runninglist_2026-06-05.csv
+Loaded running list: 121 variants
 Found new Tableau candidates: 43
-Wrote /home/als6303/lineage-classification-cdc/pull_hexcodes/pending_additions.csv (43 rows; 24 awaiting approval)
-Approved additions included: 19
-Wrote /home/als6303/lineage-classification-cdc/pull_hexcodes/final_augmented_runninglist.csv (136 total variants)
+Wrote /home/als6303/lineage-classification-cdc/pull_hexcodes/pending_additions.csv (43 rows; 25 awaiting approval)
+Approved additions included: 18
+Wrote /home/als6303/lineage-classification-cdc/pull_hexcodes/final_augmented_runninglist.csv (139 total variants)
 Wrote /home/als6303/lineage-classification-cdc/pull_hexcodes/qa_disagreements.csv (FYI only; does not overwrite running list)
-Run complete: 2026-05-22T12:53:21
+Run complete: 2026-06-05T08:47:34
 ```
 ✅ Completed: Step 1 — Pull latest CDC lineage updates
 
@@ -34,14 +35,14 @@ Validation summary:
 ✅ Found expected file: `pull_hexcodes/pending_additions.csv`
 
 Approval summary:
-- Approved rows: 19
-- Rejected rows: 24
+- Approved rows: 18
+- Rejected rows: 25
 ✅ No pending lineage reviews remain.
 
 ## QA disagreement check
 ✅ Found expected file: `pull_hexcodes/qa_disagreements.csv`
 
-🟡 STATUS: PAUSED FOR HUMAN REVIEW — 21 QA disagreement row(s) detected.
+🟡 STATUS: PAUSED FOR HUMAN REVIEW — 22 QA disagreement row(s) detected.
 
 NEXT ACTION REQUIRED:
 1. Open pull_hexcodes/qa_disagreements.csv
@@ -53,15 +54,15 @@ Showing first 10 QA disagreement rows:
 ```
   variant hex_code tableau_hex
 B.1.1.529  #FFBE7D     #E26028
-B.1.617.2  #B39DDB     #F28E2B
-     BA.2  #9CCD67     #9CCC65
+     BA.2  #9CCD67     #E15759
+BA.2.12.1  #7CB342     #EDC948
   BA.2.86  #D770EE     #D771F1
+     BA.5  #80CBC4     #76B7B2
+     BF.7  #81D4FA     #A0CBE8
      BQ.1  #006064     #FFBE7D
-   CH.1.1  #827717     #A0CBE8
+   BQ.1.1  #00838F     #A0CBE8
      JN.1  #61018F     #660099
   JN.1.18  #4AF32F     #4DF230
-JN.1.18.6  #D16F2C     #E16B1D
-   KP.2.3  #628DE8     #E15759
 ```
 
 See lineage_update_run_report.md for full details.
@@ -76,17 +77,19 @@ Command: `uv run pull_hexcodes/decision_tree.py`
 STDOUT:
 ```
 Downloading Tableau workbook…
-Archived previous final_augmented_runninglist.csv -> /home/als6303/lineage-classification-cdc/pull_hexcodes/retired/final_augmented_runninglist_2026-05-22_10.csv
-Loaded running list: 117 variants
+Archived previous pending_additions.csv -> /home/als6303/lineage-classification-cdc/pull_hexcodes/retired/pending_additions_2026-06-05_1.csv
+Archived previous final_augmented_runninglist.csv -> /home/als6303/lineage-classification-cdc/pull_hexcodes/retired/final_augmented_runninglist_2026-06-05_1.csv
+Loaded running list: 121 variants
 Found new Tableau candidates: 43
-Wrote /home/als6303/lineage-classification-cdc/pull_hexcodes/pending_additions.csv (43 rows; 24 awaiting approval)
-Approved additions included: 19
-Wrote /home/als6303/lineage-classification-cdc/pull_hexcodes/final_augmented_runninglist.csv (136 total variants)
+Wrote /home/als6303/lineage-classification-cdc/pull_hexcodes/pending_additions.csv (43 rows; 25 awaiting approval)
+Approved additions included: 18
+Wrote /home/als6303/lineage-classification-cdc/pull_hexcodes/final_augmented_runninglist.csv (139 total variants)
 Wrote /home/als6303/lineage-classification-cdc/pull_hexcodes/qa_disagreements.csv (FYI only; does not overwrite running list)
-Run complete: 2026-05-22T12:53:23
+Run complete: 2026-06-05T08:47:36
 ```
 ✅ Completed: Step 2 — Apply approved lineage updates
 ✅ Found expected file: `pull_hexcodes/final_augmented_runninglist.csv`
+Running list size check passed (139 rows).
 
 ## Step 3 — Generate clinical output
 Command: `uv run main.py --workflow-type clinical --lineage-list pull_hexcodes/final_augmented_runninglist.csv -o results/lineage_classifications.csv`
@@ -116,31 +119,31 @@ shape: (5_893, 7)
 │ ---            ┆ str            ┆ str    ┆ str      ┆ ---            ┆ ---            ┆ str      │
 │ str            ┆                ┆        ┆          ┆ str            ┆ str            ┆          │
 ╞════════════════╪════════════════╪════════╪══════════╪════════════════╪════════════════╪══════════╡
-│ A              ┆ One of the two ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ N/A      │
+│ A              ┆ One of the two ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ #FABFD2  │
 │                ┆ original       ┆        ┆          ┆                ┆                ┆          │
 │                ┆ haplot…        ┆        ┆          ┆                ┆                ┆          │
-│ A.1            ┆ USA lineage    ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ N/A      │
-│ A.2            ┆ Mostly Spanish ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ N/A      │
+│ A.1            ┆ USA lineage    ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ #FABFD2  │
+│ A.2            ┆ Mostly Spanish ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ #FABFD2  │
 │                ┆ lineage now    ┆        ┆          ┆                ┆                ┆          │
 │                ┆ inc…           ┆        ┆          ┆                ┆                ┆          │
-│ A.2.2          ┆ Australian     ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ N/A      │
+│ A.2.2          ┆ Australian     ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ #FABFD2  │
 │                ┆ lineage        ┆        ┆          ┆                ┆                ┆          │
-│ A.2.3          ┆ Scottish       ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ N/A      │
+│ A.2.3          ┆ Scottish       ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ #FABFD2  │
 │                ┆ lineage        ┆        ┆          ┆                ┆                ┆          │
 │ …              ┆ …              ┆ …      ┆ …        ┆ …              ┆ …              ┆ …        │
-│ XGU            ┆ Recombinant    ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ N/A      │
+│ XGU            ┆ Recombinant    ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ #FABFD2  │
 │                ┆ lineage of     ┆        ┆          ┆                ┆                ┆          │
 │                ┆ XFG.5.2…       ┆        ┆          ┆                ┆                ┆          │
-│ XGV            ┆ Recombinant    ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ N/A      │
+│ XGV            ┆ Recombinant    ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ #FABFD2  │
 │                ┆ lineage of     ┆        ┆          ┆                ┆                ┆          │
 │                ┆ NW.1.2,…       ┆        ┆          ┆                ┆                ┆          │
-│ XGW            ┆ Recombinant    ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ N/A      │
+│ XGW            ┆ Recombinant    ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ #FABFD2  │
 │                ┆ lineage of     ┆        ┆          ┆                ┆                ┆          │
 │                ┆ NY.3.3,…       ┆        ┆          ┆                ┆                ┆          │
-│ XGY            ┆ Recombinant    ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ N/A      │
+│ XGY            ┆ Recombinant    ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ #FABFD2  │
 │                ┆ lineage of     ┆        ┆          ┆                ┆                ┆          │
 │                ┆ XFG.3, …       ┆        ┆          ┆                ┆                ┆          │
-│ XGZ            ┆ Recombinant    ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ N/A      │
+│ XGZ            ┆ Recombinant    ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ #FABFD2  │
 │                ┆ lineage of     ┆        ┆          ┆                ┆                ┆          │
 │                ┆ XFG, QF…       ┆        ┆          ┆                ┆                ┆          │
 └────────────────┴────────────────┴────────┴──────────┴────────────────┴────────────────┴──────────┘
@@ -175,26 +178,26 @@ shape: (6_188, 7)
 │ ---            ┆ str           ┆ str       ┆ str      ┆ ---           ┆ ---           ┆ str      │
 │ str            ┆               ┆           ┆          ┆ str           ┆ str           ┆          │
 ╞════════════════╪═══════════════╪═══════════╪══════════╪═══════════════╪═══════════════╪══════════╡
-│ A              ┆ One of the    ┆ active    ┆ N/A      ┆ Other         ┆ Ancestral     ┆ N/A      │
+│ A              ┆ One of the    ┆ active    ┆ N/A      ┆ Other         ┆ Ancestral     ┆ #333333  │
 │                ┆ two original  ┆           ┆          ┆               ┆               ┆          │
 │                ┆ haplot…       ┆           ┆          ┆               ┆               ┆          │
-│ A.1            ┆ USA lineage   ┆ active    ┆ N/A      ┆ Other         ┆ Ancestral     ┆ N/A      │
-│ A.2            ┆ Mostly        ┆ active    ┆ N/A      ┆ Other         ┆ Ancestral     ┆ N/A      │
+│ A.1            ┆ USA lineage   ┆ active    ┆ N/A      ┆ Other         ┆ Ancestral     ┆ #333333  │
+│ A.2            ┆ Mostly        ┆ active    ┆ N/A      ┆ Other         ┆ Ancestral     ┆ #333333  │
 │                ┆ Spanish       ┆           ┆          ┆               ┆               ┆          │
 │                ┆ lineage now   ┆           ┆          ┆               ┆               ┆          │
 │                ┆ inc…          ┆           ┆          ┆               ┆               ┆          │
-│ A.2.2          ┆ Australian    ┆ active    ┆ N/A      ┆ Other         ┆ Ancestral     ┆ N/A      │
+│ A.2.2          ┆ Australian    ┆ active    ┆ N/A      ┆ Other         ┆ Ancestral     ┆ #333333  │
 │                ┆ lineage       ┆           ┆          ┆               ┆               ┆          │
-│ A.2.3          ┆ Scottish      ┆ active    ┆ N/A      ┆ Other         ┆ Ancestral     ┆ N/A      │
+│ A.2.3          ┆ Scottish      ┆ active    ┆ N/A      ┆ Other         ┆ Ancestral     ┆ #333333  │
 │                ┆ lineage       ┆           ┆          ┆               ┆               ┆          │
 │ …              ┆ …             ┆ …         ┆ …        ┆ …             ┆ …             ┆ …        │
-│ MC.34          ┆ Withdrawn:    ┆ withdrawn ┆ N/A      ┆ Other         ┆ Other         ┆ N/A      │
+│ MC.34          ┆ Withdrawn:    ┆ withdrawn ┆ N/A      ┆ unreportable  ┆ unreportable  ┆ #EEEEEE  │
 │                ┆ Alias of      ┆           ┆          ┆               ┆               ┆          │
 │                ┆ B.1.1.529.…   ┆           ┆          ┆               ┆               ┆          │
-│ XFG.20         ┆ Withdrawn:    ┆ withdrawn ┆ N/A      ┆ Other         ┆ Other         ┆ N/A      │
+│ XFG.20         ┆ Withdrawn:    ┆ withdrawn ┆ N/A      ┆ unreportable  ┆ unreportable  ┆ #EEEEEE  │
 │                ┆ C10615T       ┆           ┆          ┆               ┆               ┆          │
 │                ┆ (didn't rea…  ┆           ┆          ┆               ┆               ┆          │
-│ XFG.3.31.1     ┆ Withdrawn:    ┆ withdrawn ┆ N/A      ┆ Other         ┆ Other         ┆ N/A      │
+│ XFG.3.31.1     ┆ Withdrawn:    ┆ withdrawn ┆ N/A      ┆ unreportable  ┆ unreportable  ┆ #EEEEEE  │
 │                ┆ only one      ┆           ┆          ┆               ┆               ┆          │
 │                ┆ sequence h…   ┆           ┆          ┆               ┆               ┆          │
 │ QW.2           ┆ Redesignated  ┆ withdrawn ┆ N/A      ┆ XFG           ┆ XFG           ┆ #4E6EA1  │
@@ -218,10 +221,10 @@ Columns: 7
 
 ## SUMMARY
 Pending lineage rows: 43
-Approved rows: 19
-Rejected rows: 24
+Approved rows: 18
+Rejected rows: 25
 Still pending review: 0
-QA disagreements: 22
+QA disagreements: 20
 Clinical output rows: 5893
 Wastewater output rows: 6188
 
