@@ -5,10 +5,14 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "beautifulsoup4>=4.14.3",
     "fastexcel>=0.18.0",
+    "lxml>=6.1.1",
+    "pandas>=3.0.3",
     "pango-aliasor>=0.3.0",
     "pathlib>=1.0.1",
     "polars>=1.35.2",
+    "requests>=2.34.2",
 ]
 
 [dependency-groups]
