@@ -1,5 +1,5 @@
 # Lineage Classification Update Run Report
-Run time: 2026-06-12T13:30:48
+Run time: 2026-06-15T17:40:58
 
 This report records automation steps, warnings, validation checks, and required manual review actions.
 
@@ -9,15 +9,15 @@ Command: `uv run pull_hexcodes/decision_tree.py`
 STDOUT:
 ```
 Downloading Tableau workbook…
-Archived previous pending_additions.csv -> /home/als6303/lineage-classification-cdc/pull_hexcodes/retired/pending_additions_2026-06-12.csv
-Archived previous final_augmented_runninglist.csv -> /home/als6303/lineage-classification-cdc/pull_hexcodes/retired/final_augmented_runninglist_2026-06-12.csv
+Archived previous pending_additions.csv -> /home/runner/work/lineage-classification-cdc/lineage-classification-cdc/pull_hexcodes/retired/pending_additions_2026-06-15.csv
+Archived previous final_augmented_runninglist.csv -> /home/runner/work/lineage-classification-cdc/lineage-classification-cdc/pull_hexcodes/retired/final_augmented_runninglist_2026-06-15.csv
 Loaded running list: 121 variants
 Found new Tableau candidates: 43
-Wrote /home/als6303/lineage-classification-cdc/pull_hexcodes/pending_additions.csv (43 rows; 25 awaiting approval)
+Wrote /home/runner/work/lineage-classification-cdc/lineage-classification-cdc/pull_hexcodes/pending_additions.csv (43 rows; 25 awaiting approval)
 Approved additions included: 18
-Wrote /home/als6303/lineage-classification-cdc/pull_hexcodes/final_augmented_runninglist.csv (139 total variants)
-Wrote /home/als6303/lineage-classification-cdc/pull_hexcodes/qa_disagreements.csv (FYI only; does not overwrite running list)
-Run complete: 2026-06-12T13:30:50
+Wrote /home/runner/work/lineage-classification-cdc/lineage-classification-cdc/pull_hexcodes/final_augmented_runninglist.csv (139 total variants)
+Wrote /home/runner/work/lineage-classification-cdc/lineage-classification-cdc/pull_hexcodes/qa_disagreements.csv (FYI only; does not overwrite running list)
+Run complete: 2026-06-15T17:41:01
 ```
 ✅ Completed: Step 1 — Pull latest CDC lineage updates
 
@@ -54,13 +54,13 @@ Showing first 10 QA disagreement rows:
 ```
   variant hex_code tableau_hex
 B.1.1.529  #FFBE7D     #E26028
+B.1.617.2  #B39DDB     #F28E2B
      BA.2  #9CCD67     #9CCC65
 BA.2.12.1  #7CB342     #EDC948
   BA.2.86  #D770EE     #D771F1
      BA.4  #FFD54F     #59A14F
+     BA.5  #80CBC4     #76B7B2
      BQ.1  #006064     #FFBE7D
-   BQ.1.1  #00838F     #A0CBE8
-   CH.1.1  #827717     #A0CBE8
      JN.1  #61018F     #660099
   JN.1.18  #4AF32F     #4DF230
 ```
@@ -77,15 +77,15 @@ Command: `uv run pull_hexcodes/decision_tree.py`
 STDOUT:
 ```
 Downloading Tableau workbook…
-Archived previous pending_additions.csv -> /home/als6303/lineage-classification-cdc/pull_hexcodes/retired/pending_additions_2026-06-12_1.csv
-Archived previous final_augmented_runninglist.csv -> /home/als6303/lineage-classification-cdc/pull_hexcodes/retired/final_augmented_runninglist_2026-06-12_1.csv
+Archived previous pending_additions.csv -> /home/runner/work/lineage-classification-cdc/lineage-classification-cdc/pull_hexcodes/retired/pending_additions_2026-06-15_1.csv
+Archived previous final_augmented_runninglist.csv -> /home/runner/work/lineage-classification-cdc/lineage-classification-cdc/pull_hexcodes/retired/final_augmented_runninglist_2026-06-15_1.csv
 Loaded running list: 121 variants
 Found new Tableau candidates: 43
-Wrote /home/als6303/lineage-classification-cdc/pull_hexcodes/pending_additions.csv (43 rows; 25 awaiting approval)
+Wrote /home/runner/work/lineage-classification-cdc/lineage-classification-cdc/pull_hexcodes/pending_additions.csv (43 rows; 25 awaiting approval)
 Approved additions included: 18
-Wrote /home/als6303/lineage-classification-cdc/pull_hexcodes/final_augmented_runninglist.csv (139 total variants)
-Wrote /home/als6303/lineage-classification-cdc/pull_hexcodes/qa_disagreements.csv (FYI only; does not overwrite running list)
-Run complete: 2026-06-12T13:30:52
+Wrote /home/runner/work/lineage-classification-cdc/lineage-classification-cdc/pull_hexcodes/final_augmented_runninglist.csv (139 total variants)
+Wrote /home/runner/work/lineage-classification-cdc/lineage-classification-cdc/pull_hexcodes/qa_disagreements.csv (FYI only; does not overwrite running list)
+Run complete: 2026-06-15T17:41:03
 ```
 ✅ Completed: Step 2 — Apply approved lineage updates
 ✅ Found expected file: `pull_hexcodes/final_augmented_runninglist.csv`
@@ -224,7 +224,7 @@ Pending lineage rows: 43
 Approved rows: 18
 Rejected rows: 25
 Still pending review: 0
-QA disagreements: 21
+QA disagreements: 23
 Clinical output rows: 5898
 Wastewater output rows: 6193
 
