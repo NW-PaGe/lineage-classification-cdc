@@ -1,5 +1,5 @@
 # Lineage Classification Update Run Report
-Run time: 2026-06-12T13:30:48
+Run time: 2026-07-06T17:01:06
 
 This report records automation steps, warnings, validation checks, and required manual review actions.
 
@@ -9,15 +9,15 @@ Command: `uv run pull_hexcodes/decision_tree.py`
 STDOUT:
 ```
 Downloading Tableau workbook…
-Archived previous pending_additions.csv -> /home/als6303/lineage-classification-cdc/pull_hexcodes/retired/pending_additions_2026-06-12.csv
-Archived previous final_augmented_runninglist.csv -> /home/als6303/lineage-classification-cdc/pull_hexcodes/retired/final_augmented_runninglist_2026-06-12.csv
+Archived previous pending_additions.csv -> /home/runner/work/lineage-classification-cdc/lineage-classification-cdc/pull_hexcodes/retired/pending_additions_2026-07-06.csv
+Archived previous final_augmented_runninglist.csv -> /home/runner/work/lineage-classification-cdc/lineage-classification-cdc/pull_hexcodes/retired/final_augmented_runninglist_2026-07-06.csv
 Loaded running list: 121 variants
 Found new Tableau candidates: 43
-Wrote /home/als6303/lineage-classification-cdc/pull_hexcodes/pending_additions.csv (43 rows; 25 awaiting approval)
+Wrote /home/runner/work/lineage-classification-cdc/lineage-classification-cdc/pull_hexcodes/pending_additions.csv (43 rows; 25 awaiting approval)
 Approved additions included: 18
-Wrote /home/als6303/lineage-classification-cdc/pull_hexcodes/final_augmented_runninglist.csv (139 total variants)
-Wrote /home/als6303/lineage-classification-cdc/pull_hexcodes/qa_disagreements.csv (FYI only; does not overwrite running list)
-Run complete: 2026-06-12T13:30:50
+Wrote /home/runner/work/lineage-classification-cdc/lineage-classification-cdc/pull_hexcodes/final_augmented_runninglist.csv (139 total variants)
+Wrote /home/runner/work/lineage-classification-cdc/lineage-classification-cdc/pull_hexcodes/qa_disagreements.csv (FYI only; does not overwrite running list)
+Run complete: 2026-07-06T17:01:09
 ```
 ✅ Completed: Step 1 — Pull latest CDC lineage updates
 
@@ -42,7 +42,7 @@ Approval summary:
 ## QA disagreement check
 ✅ Found expected file: `pull_hexcodes/qa_disagreements.csv`
 
-🟡 STATUS: PAUSED FOR HUMAN REVIEW — 22 QA disagreement row(s) detected.
+🟡 STATUS: PAUSED FOR HUMAN REVIEW — 19 QA disagreement row(s) detected.
 
 NEXT ACTION REQUIRED:
 1. Open pull_hexcodes/qa_disagreements.csv
@@ -55,14 +55,14 @@ Showing first 10 QA disagreement rows:
   variant hex_code tableau_hex
 B.1.1.529  #FFBE7D     #E26028
      BA.2  #9CCD67     #9CCC65
-BA.2.12.1  #7CB342     #EDC948
   BA.2.86  #D770EE     #D771F1
-     BA.4  #FFD54F     #59A14F
-     BQ.1  #006064     #FFBE7D
+     BA.5  #80CBC4     #76B7B2
    BQ.1.1  #00838F     #A0CBE8
-   CH.1.1  #827717     #A0CBE8
      JN.1  #61018F     #660099
   JN.1.18  #4AF32F     #4DF230
+JN.1.18.6  #D16F2C     #E16B1D
+   KP.2.3  #628DE8     #E15759
+     KP.3  #B06589     #F28E2B
 ```
 
 See lineage_update_run_report.md for full details.
@@ -77,15 +77,15 @@ Command: `uv run pull_hexcodes/decision_tree.py`
 STDOUT:
 ```
 Downloading Tableau workbook…
-Archived previous pending_additions.csv -> /home/als6303/lineage-classification-cdc/pull_hexcodes/retired/pending_additions_2026-06-12_1.csv
-Archived previous final_augmented_runninglist.csv -> /home/als6303/lineage-classification-cdc/pull_hexcodes/retired/final_augmented_runninglist_2026-06-12_1.csv
+Archived previous pending_additions.csv -> /home/runner/work/lineage-classification-cdc/lineage-classification-cdc/pull_hexcodes/retired/pending_additions_2026-07-06_1.csv
+Archived previous final_augmented_runninglist.csv -> /home/runner/work/lineage-classification-cdc/lineage-classification-cdc/pull_hexcodes/retired/final_augmented_runninglist_2026-07-06_1.csv
 Loaded running list: 121 variants
 Found new Tableau candidates: 43
-Wrote /home/als6303/lineage-classification-cdc/pull_hexcodes/pending_additions.csv (43 rows; 25 awaiting approval)
+Wrote /home/runner/work/lineage-classification-cdc/lineage-classification-cdc/pull_hexcodes/pending_additions.csv (43 rows; 25 awaiting approval)
 Approved additions included: 18
-Wrote /home/als6303/lineage-classification-cdc/pull_hexcodes/final_augmented_runninglist.csv (139 total variants)
-Wrote /home/als6303/lineage-classification-cdc/pull_hexcodes/qa_disagreements.csv (FYI only; does not overwrite running list)
-Run complete: 2026-06-12T13:30:52
+Wrote /home/runner/work/lineage-classification-cdc/lineage-classification-cdc/pull_hexcodes/final_augmented_runninglist.csv (139 total variants)
+Wrote /home/runner/work/lineage-classification-cdc/lineage-classification-cdc/pull_hexcodes/qa_disagreements.csv (FYI only; does not overwrite running list)
+Run complete: 2026-07-06T17:01:11
 ```
 ✅ Completed: Step 2 — Apply approved lineage updates
 ✅ Found expected file: `pull_hexcodes/final_augmented_runninglist.csv`
@@ -112,7 +112,7 @@ Checking for variants in the list of CDC-tracked variant list that are missing h
 The correction key is up to date with all withdrawn lineages.
 Successfully produced the clinical lineage classification file! 
 
-shape: (5_898, 7)
+shape: (5_919, 7)
 ┌────────────────┬────────────────┬────────┬──────────┬────────────────┬────────────────┬──────────┐
 │ lineage_extrac ┆ Description    ┆ status ┆ who_name ┆ doh_variant_na ┆ doh_variant_na ┆ hex_code │
 │ ted            ┆ ---            ┆ ---    ┆ ---      ┆ me             ┆ me_tables      ┆ ---      │
@@ -131,9 +131,6 @@ shape: (5_898, 7)
 │ A.2.3          ┆ Scottish       ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ #FABFD2  │
 │                ┆ lineage        ┆        ┆          ┆                ┆                ┆          │
 │ …              ┆ …              ┆ …      ┆ …        ┆ …              ┆ …              ┆ …        │
-│ XGU            ┆ Recombinant    ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ #FABFD2  │
-│                ┆ lineage of     ┆        ┆          ┆                ┆                ┆          │
-│                ┆ XFG.5.2…       ┆        ┆          ┆                ┆                ┆          │
 │ XGV            ┆ Recombinant    ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ #FABFD2  │
 │                ┆ lineage of     ┆        ┆          ┆                ┆                ┆          │
 │                ┆ NW.1.2,…       ┆        ┆          ┆                ┆                ┆          │
@@ -146,6 +143,9 @@ shape: (5_898, 7)
 │ XGZ            ┆ Recombinant    ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ #FABFD2  │
 │                ┆ lineage of     ┆        ┆          ┆                ┆                ┆          │
 │                ┆ XFG, QF…       ┆        ┆          ┆                ┆                ┆          │
+│ XHA            ┆ Recombinant    ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ #FABFD2  │
+│                ┆ lineage of     ┆        ┆          ┆                ┆                ┆          │
+│                ┆ TB.2, R…       ┆        ┆          ┆                ┆                ┆          │
 └────────────────┴────────────────┴────────┴──────────┴────────────────┴────────────────┴──────────┘
 ```
 ✅ Completed: Step 3 — Generate clinical output
@@ -171,7 +171,7 @@ Checking for variants in the list of CDC-tracked variant list that are missing h
 The correction key is up to date with all withdrawn lineages.
 Successfully produced the wastewater lineage classification file! 
 
-shape: (6_193, 7)
+shape: (6_214, 7)
 ┌────────────────┬───────────────┬───────────┬──────────┬───────────────┬───────────────┬──────────┐
 │ lineage_extrac ┆ Description   ┆ status    ┆ who_name ┆ doh_variant_n ┆ wastewater_va ┆ hex_code │
 │ ted            ┆ ---           ┆ ---       ┆ ---      ┆ ame           ┆ riant_name    ┆ ---      │
@@ -212,11 +212,11 @@ shape: (6_193, 7)
 ## Output validation
 ✅ Found expected file: `results/lineage_classifications.csv`
 ✅ `results/lineage_classifications.csv` passed validation.
-Rows: 5898
+Rows: 5919
 Columns: 7
 ✅ Found expected file: `results/ww_lineage_classifications.csv`
 ✅ `results/ww_lineage_classifications.csv` passed validation.
-Rows: 6193
+Rows: 6214
 Columns: 7
 
 ## SUMMARY
@@ -225,8 +225,8 @@ Approved rows: 18
 Rejected rows: 25
 Still pending review: 0
 QA disagreements: 21
-Clinical output rows: 5898
-Wastewater output rows: 6193
+Clinical output rows: 5919
+Wastewater output rows: 6214
 
 ## FINAL STATUS
 ✅ SUCCESS: Pipeline completed successfully.
