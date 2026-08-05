@@ -1,3 +1,8 @@
+# project specific
+nowcast_workbook.twb
+pull_hexcodes/retired/
+Variant_Proportions_Plus_Nowcasting_PREVIEW.twb
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
