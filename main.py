@@ -326,7 +326,7 @@ def make_map(csv: str, workflow_type: str = "clinical", lineage_list: Path = 'pu
         # add DOH variant name - cdc parent if exists.
         # if not a child of cdc parent lineage,
         # then who_greek
-        return who_names.with_columns(
+        w_variant_names = who_names.with_columns(
             pl.when(
                 pl.col("cdc_parent_lineage").is_not_null()
             )  # if lineage has a cdc parent
@@ -339,6 +339,26 @@ def make_map(csv: str, workflow_type: str = "clinical", lineage_list: Path = 'pu
             .otherwise(pl.lit("Other"))
             .alias("doh_variant_name")  # otherwise assign "other"
         )
+        # We have encountered situations where lineages exist as 'withdrawn' and 'active' within
+        # lineage_notes.txt (I'm looking at you, HK.3.11). This step removes the 'withdrawn' row
+        # for variants that are also in the 'active' set.
+        def dedup_variants(w_variant_names):
+            dups = w_variant_names.filter(pl.col("lineage_extracted").is_duplicated())
+            print(dups)
+            to_remove=[]
+            # get names of duplicate variants
+            duped_vars = dups.select(pl.col("lineage_extracted").unique())["lineage_extracted"].to_list()
+            for lin in duped_vars:
+                status = dups.filter(pl.col("lineage_extracted") == lin)['status'].unique().to_list()
+                if 'active' in status and 'withdrawn' in status:
+                    to_remove.append(lin)
+            print(to_remove)
+            return w_variant_names.filter(
+                ~(
+                    pl.col("status") == "withdrawn"
+                ) | ~pl.col("lineage_extracted").is_in(to_remove)
+            )
+        return dedup_variants(w_variant_names)
 
     base_df = build_base_df()
 
