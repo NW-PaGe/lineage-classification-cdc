@@ -344,7 +344,6 @@ def make_map(csv: str, workflow_type: str = "clinical", lineage_list: Path = 'pu
         # for variants that are also in the 'active' set.
         def dedup_variants(w_variant_names):
             dups = w_variant_names.filter(pl.col("lineage_extracted").is_duplicated())
-            print(dups)
             to_remove=[]
             # get names of duplicate variants
             duped_vars = dups.select(pl.col("lineage_extracted").unique())["lineage_extracted"].to_list()
@@ -352,7 +351,6 @@ def make_map(csv: str, workflow_type: str = "clinical", lineage_list: Path = 'pu
                 status = dups.filter(pl.col("lineage_extracted") == lin)['status'].unique().to_list()
                 if 'active' in status and 'withdrawn' in status:
                     to_remove.append(lin)
-            print(to_remove)
             return w_variant_names.filter(
                 ~(
                     pl.col("status") == "withdrawn"
