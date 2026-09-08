@@ -1,5 +1,5 @@
 # Lineage Classification Update Run Report
-Run time: 2026-09-01T08:37:35
+Run time: 2026-09-08T08:21:24
 
 This report records automation steps, warnings, validation checks, and required manual review actions.
 
@@ -9,15 +9,15 @@ Command: `uv run pull_hexcodes/decision_tree.py`
 STDOUT:
 ```
 Downloading Tableau workbook…
-Archived previous pending_additions.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/pending_additions_2026-09-01_1.csv
-Archived previous final_augmented_runninglist.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/final_augmented_runninglist_2026-09-01_1.csv
+Archived previous pending_additions.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/pending_additions_2026-09-08.csv
+Archived previous final_augmented_runninglist.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/final_augmented_runninglist_2026-09-08.csv
 Loaded running list: 121 variants
 Found new Tableau candidates: 48
 Wrote /home/dah0303/lineage-classification-cdc/pull_hexcodes/pending_additions.csv (48 rows; 25 awaiting approval)
 Approved additions included: 23
 Wrote /home/dah0303/lineage-classification-cdc/pull_hexcodes/final_augmented_runninglist.csv (144 total variants)
 Wrote /home/dah0303/lineage-classification-cdc/pull_hexcodes/qa_disagreements.csv (FYI only; does not overwrite running list)
-Run complete: 2026-09-01T08:37:37
+Run complete: 2026-09-08T08:21:27
 ```
 ✅ Completed: Step 1 — Pull latest CDC lineage updates
 
@@ -58,10 +58,10 @@ B.1.617.2  #B39DDB     #F28E2B
      BA.2  #9CCD67     #9CCC65
 BA.2.12.1  #7CB342     #EDC948
   BA.2.86  #D770EE     #D771F1
-     BA.5  #80CBC4     #76B7B2
+     BA.4  #FFD54F     #59A14F
      BF.7  #81D4FA     #A0CBE8
      BQ.1  #006064     #FFBE7D
-   CH.1.1  #827717     #A0CBE8
+   BQ.1.1  #00838F     #A0CBE8
      JN.1  #61018F     #660099
 ```
 
@@ -77,15 +77,15 @@ Command: `uv run pull_hexcodes/decision_tree.py`
 STDOUT:
 ```
 Downloading Tableau workbook…
-Archived previous pending_additions.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/pending_additions_2026-09-01_2.csv
-Archived previous final_augmented_runninglist.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/final_augmented_runninglist_2026-09-01_2.csv
+Archived previous pending_additions.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/pending_additions_2026-09-08_1.csv
+Archived previous final_augmented_runninglist.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/final_augmented_runninglist_2026-09-08_1.csv
 Loaded running list: 121 variants
 Found new Tableau candidates: 48
 Wrote /home/dah0303/lineage-classification-cdc/pull_hexcodes/pending_additions.csv (48 rows; 25 awaiting approval)
 Approved additions included: 23
 Wrote /home/dah0303/lineage-classification-cdc/pull_hexcodes/final_augmented_runninglist.csv (144 total variants)
 Wrote /home/dah0303/lineage-classification-cdc/pull_hexcodes/qa_disagreements.csv (FYI only; does not overwrite running list)
-Run complete: 2026-09-01T08:37:38
+Run complete: 2026-09-08T08:21:28
 ```
 ✅ Completed: Step 2 — Apply approved lineage updates
 ✅ Found expected file: `pull_hexcodes/final_augmented_runninglist.csv`
@@ -112,7 +112,7 @@ Checking for variants in the list of CDC-tracked variant list that are missing h
 The correction key is up to date with all withdrawn lineages.
 Successfully produced the clinical lineage classification file! 
 
-shape: (6_007, 7)
+shape: (6_009, 7)
 ┌────────────────┬────────────────┬────────┬──────────┬────────────────┬────────────────┬──────────┐
 │ lineage_extrac ┆ Description    ┆ status ┆ who_name ┆ doh_variant_na ┆ doh_variant_na ┆ hex_code │
 │ ted            ┆ ---            ┆ ---    ┆ ---      ┆ me             ┆ me_tables      ┆ ---      │
@@ -171,7 +171,7 @@ Checking for variants in the list of CDC-tracked variant list that are missing h
 The correction key is up to date with all withdrawn lineages.
 Successfully produced the wastewater lineage classification file! 
 
-shape: (6_299, 7)
+shape: (6_301, 7)
 ┌────────────────┬───────────────┬───────────┬──────────┬───────────────┬───────────────┬──────────┐
 │ lineage_extrac ┆ Description   ┆ status    ┆ who_name ┆ doh_variant_n ┆ wastewater_va ┆ hex_code │
 │ ted            ┆ ---           ┆ ---       ┆ ---      ┆ ame           ┆ riant_name    ┆ ---      │
@@ -212,11 +212,11 @@ shape: (6_299, 7)
 ## Output validation
 ✅ Found expected file: `results/lineage_classifications.csv`
 ✅ `results/lineage_classifications.csv` passed validation.
-Rows: 6007
+Rows: 6009
 Columns: 7
 ✅ Found expected file: `results/ww_lineage_classifications.csv`
 ✅ `results/ww_lineage_classifications.csv` passed validation.
-Rows: 6299
+Rows: 6301
 Columns: 7
 
 ## SUMMARY
@@ -224,9 +224,9 @@ Pending lineage rows: 48
 Approved rows: 23
 Rejected rows: 25
 Still pending review: 0
-QA disagreements: 23
-Clinical output rows: 6007
-Wastewater output rows: 6299
+QA disagreements: 20
+Clinical output rows: 6009
+Wastewater output rows: 6301
 
 ## FINAL STATUS
 ✅ SUCCESS: Pipeline completed successfully.
