@@ -1,5 +1,5 @@
 # Lineage Classification Update Run Report
-Run time: 2026-09-08T08:21:24
+Run time: 2026-09-30T09:55:22
 
 This report records automation steps, warnings, validation checks, and required manual review actions.
 
@@ -9,15 +9,15 @@ Command: `uv run pull_hexcodes/decision_tree.py`
 STDOUT:
 ```
 Downloading Tableau workbook…
-Archived previous pending_additions.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/pending_additions_2026-09-08.csv
-Archived previous final_augmented_runninglist.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/final_augmented_runninglist_2026-09-08.csv
+Archived previous pending_additions.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/pending_additions_2026-09-30_1.csv
+Archived previous final_augmented_runninglist.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/final_augmented_runninglist_2026-09-30_1.csv
 Loaded running list: 121 variants
-Found new Tableau candidates: 48
-Wrote /home/dah0303/lineage-classification-cdc/pull_hexcodes/pending_additions.csv (48 rows; 25 awaiting approval)
-Approved additions included: 23
-Wrote /home/dah0303/lineage-classification-cdc/pull_hexcodes/final_augmented_runninglist.csv (144 total variants)
+Found new Tableau candidates: 50
+Wrote /home/dah0303/lineage-classification-cdc/pull_hexcodes/pending_additions.csv (50 rows; 25 awaiting approval)
+Approved additions included: 25
+Wrote /home/dah0303/lineage-classification-cdc/pull_hexcodes/final_augmented_runninglist.csv (146 total variants)
 Wrote /home/dah0303/lineage-classification-cdc/pull_hexcodes/qa_disagreements.csv (FYI only; does not overwrite running list)
-Run complete: 2026-09-08T08:21:27
+Run complete: 2026-09-30T09:55:23
 ```
 ✅ Completed: Step 1 — Pull latest CDC lineage updates
 
@@ -35,14 +35,14 @@ Validation summary:
 ✅ Found expected file: `pull_hexcodes/pending_additions.csv`
 
 Approval summary:
-- Approved rows: 23
+- Approved rows: 25
 - Rejected rows: 25
 ✅ No pending lineage reviews remain.
 
 ## QA disagreement check
 ✅ Found expected file: `pull_hexcodes/qa_disagreements.csv`
 
-🟡 STATUS: PAUSED FOR HUMAN REVIEW — 22 QA disagreement row(s) detected.
+🟡 STATUS: PAUSED FOR HUMAN REVIEW — 21 QA disagreement row(s) detected.
 
 NEXT ACTION REQUIRED:
 1. Open pull_hexcodes/qa_disagreements.csv
@@ -55,14 +55,14 @@ Showing first 10 QA disagreement rows:
   variant hex_code tableau_hex
 B.1.1.529  #FFBE7D     #E26028
 B.1.617.2  #B39DDB     #F28E2B
-     BA.2  #9CCD67     #9CCC65
-BA.2.12.1  #7CB342     #EDC948
+     BA.2  #9CCD67     #E15759
   BA.2.86  #D770EE     #D771F1
-     BA.4  #FFD54F     #59A14F
-     BF.7  #81D4FA     #A0CBE8
-     BQ.1  #006064     #FFBE7D
-   BQ.1.1  #00838F     #A0CBE8
+     BA.5  #80CBC4     #76B7B2
+   CH.1.1  #827717     #A0CBE8
      JN.1  #61018F     #660099
+  JN.1.18  #4AF32F     #4DF230
+JN.1.18.6  #D16F2C     #E16B1D
+   KP.2.3  #628DE8     #E15759
 ```
 
 See lineage_update_run_report.md for full details.
@@ -77,19 +77,19 @@ Command: `uv run pull_hexcodes/decision_tree.py`
 STDOUT:
 ```
 Downloading Tableau workbook…
-Archived previous pending_additions.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/pending_additions_2026-09-08_1.csv
-Archived previous final_augmented_runninglist.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/final_augmented_runninglist_2026-09-08_1.csv
+Archived previous pending_additions.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/pending_additions_2026-09-30_2.csv
+Archived previous final_augmented_runninglist.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/final_augmented_runninglist_2026-09-30_2.csv
 Loaded running list: 121 variants
-Found new Tableau candidates: 48
-Wrote /home/dah0303/lineage-classification-cdc/pull_hexcodes/pending_additions.csv (48 rows; 25 awaiting approval)
-Approved additions included: 23
-Wrote /home/dah0303/lineage-classification-cdc/pull_hexcodes/final_augmented_runninglist.csv (144 total variants)
+Found new Tableau candidates: 50
+Wrote /home/dah0303/lineage-classification-cdc/pull_hexcodes/pending_additions.csv (50 rows; 25 awaiting approval)
+Approved additions included: 25
+Wrote /home/dah0303/lineage-classification-cdc/pull_hexcodes/final_augmented_runninglist.csv (146 total variants)
 Wrote /home/dah0303/lineage-classification-cdc/pull_hexcodes/qa_disagreements.csv (FYI only; does not overwrite running list)
-Run complete: 2026-09-08T08:21:28
+Run complete: 2026-09-30T09:55:25
 ```
 ✅ Completed: Step 2 — Apply approved lineage updates
 ✅ Found expected file: `pull_hexcodes/final_augmented_runninglist.csv`
-Running list size check passed (144 rows).
+Running list size check passed (146 rows).
 
 ## Step 3 — Generate clinical output
 Command: `uv run main.py --workflow-type clinical --lineage-list pull_hexcodes/final_augmented_runninglist.csv -o results/lineage_classifications.csv`
@@ -220,11 +220,11 @@ Rows: 6301
 Columns: 7
 
 ## SUMMARY
-Pending lineage rows: 48
-Approved rows: 23
+Pending lineage rows: 50
+Approved rows: 25
 Rejected rows: 25
 Still pending review: 0
-QA disagreements: 20
+QA disagreements: 23
 Clinical output rows: 6009
 Wastewater output rows: 6301
 
