@@ -92,6 +92,7 @@ Other,#FABFD2,running_list
 P.1,#FDB462,running_list
 P.2,#FFED6F,running_list
 PA.1,#4545FF,running_list
+PJ.2.1,#A7A9D7,tableau_approved
 PQ.17,#BF2490,tableau_approved
 PQ.17.11,#F28E2B,tableau_approved
 PQ.2.1.6,#D94ED9,tableau_approved
@@ -101,6 +102,7 @@ RK.1,#F17ED8,tableau_approved
 RV.1,#6868DC,tableau_approved
 RW.1.1,#61BC8E,tableau_approved
 Recombinant,#FF0000,running_list
+SB.1.1,#D3D36C,tableau_approved
 SW.2,#FFA459,tableau_approved
 XBB,#9FA8DA,running_list
 XBB.1.16,#4527A0,running_list

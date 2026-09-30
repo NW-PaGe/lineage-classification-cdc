@@ -1503,7 +1503,7 @@ PH.1,"Alias of B.1.1.529.2.86.1.1.11.1.3.1.1.10.1.6.1, S:V1264L (G25352T), ORF1a
 MC.10.1.7,"Alias of B.1.1.529.2.86.1.1.11.1.3.1.1.10.1.7, ORF1a:D1228G, ORF1b:T1230I, Canada/US",active,Omicron,MC.10.1,MC.10.1,#0956D1
 PJ.1,"Alias of B.1.1.529.2.86.1.1.11.1.3.1.1.10.1.7.1, S:R346T, ORF1b:T76I, Canada, from sars-cov-2-variants/lineage-proposals#2523",active,Omicron,MC.10.1,MC.10.1,#0956D1
 PJ.2,"Alias of B.1.1.529.2.86.1.1.11.1.3.1.1.10.1.7.2, S:T22N, S:N439K, S:H445P, S:Q675K, Canada, from #3237",active,Omicron,MC.10.1,MC.10.1,#0956D1
-PJ.2.1,"Alias of B.1.1.529.2.86.1.1.11.1.3.1.1.10.1.7.2.1, S:R190S, S:S446T, S:T547K, S:S621P, S:A623S, S:D839K, S:A958S, S:D1146G, S:I1169F, on branch with S:R346T, S:W452K, S:V1264L, from #3237",active,Omicron,MC.10.1,MC.10.1,#0956D1
+PJ.2.1,"Alias of B.1.1.529.2.86.1.1.11.1.3.1.1.10.1.7.2.1, S:R190S, S:S446T, S:T547K, S:S621P, S:A623S, S:D839K, S:A958S, S:D1146G, S:I1169F, on branch with S:R346T, S:W452K, S:V1264L, from #3237",active,Omicron,PJ.2.1,PJ.2.1,#A7A9D7
 MC.10.1.8,"Alias of B.1.1.529.2.86.1.1.11.1.3.1.1.10.1.8, G18960A, T28094A",active,Omicron,MC.10.1,MC.10.1,#0956D1
 MC.10.2,"Alias of B.1.1.529.2.86.1.1.11.1.3.1.1.10.2, S:I101T, S:A376D, ORF1a:K3353R, from sars-cov-2-variants/lineage-proposals#2015",active,Omicron,KP.3.1.1,KP.3.1.1,#2F92A1
 MC.10.2.1,"Alias of B.1.1.529.2.86.1.1.11.1.3.1.1.10.2.1, S:K679R, ORf7a:A105S, Australia/New Zealand, from #2862",active,Omicron,KP.3.1.1,KP.3.1.1,#2F92A1
@@ -5746,8 +5746,8 @@ XFG.6.2.1,"S:D253G, from sars-cov-2-variants/lineage-proposals#2962",active,N/A,
 SC.1,"Alias of XFG.6.2.1.1, C10228T",active,N/A,XFG.6,XFG.6,#5555FF
 XFG.6.2.2,A18585T,active,N/A,XFG.6,XFG.6,#5555FF
 SB.1,"Alias of XFG.6.2.2.1, T21414C, from sars-cov-2-variants/lineage-proposals#3228",active,N/A,XFG.6,XFG.6,#5555FF
-SB.1.1,"Alias of XFG.6.2.2.1, S:A435S, S:ins16KPLF, from sars-cov-2-variants/lineage-proposals#3275",active,N/A,XFG.6,XFG.6,#5555FF
-SB.1.1.1,"Alias of XFG.6.2.2.1.1, S:K679R",active,N/A,XFG.6,XFG.6,#5555FF
+SB.1.1,"Alias of XFG.6.2.2.1.1, S:A435S, S:ins16KPLF, from sars-cov-2-variants/lineage-proposals#3275",active,N/A,SB.1.1,SB.1.1,#D3D36C
+SB.1.1.1,"Alias of XFG.6.2.2.1.1.1, S:K679R",active,N/A,SB.1.1,SB.1.1,#D3D36C
 XFG.6.2.3,C9226T,active,N/A,XFG.6,XFG.6,#5555FF
 SU.1,"Alias of XFG.6.2.3.1, S:S680P, N:T282I, from sars-cov-2-variants/lineage-proposals#3381",active,N/A,XFG.6,XFG.6,#5555FF
 XFG.6.3,T8359C,active,N/A,XFG.6,XFG.6,#5555FF
@@ -5974,7 +5974,7 @@ XFZ.4.1,S:T572I,active,N/A,XFZ,XFZ,#9D3B2E
 XFZ.4.1.1,A29122G,active,N/A,XFZ,XFZ,#9D3B2E
 XFZ.4.1.2,S:P793S,active,N/A,XFZ,XFZ,#9D3B2E
 XFZ.5,ORF1a:A591V,active,N/A,XFZ,XFZ,#9D3B2E
-XFZ.5.1,"S:S446N, ORF1a:S2103F",active,N/A,XFZ,XFZ,#9D3B2E
+XFZ.5.1,"S:S446D, ORF1a:S2103F",active,N/A,XFZ,XFZ,#9D3B2E
 XFZ.6,S:K147Q,active,N/A,XFZ,XFZ,#9D3B2E
 XGA,"Recombinant lineage of XFJ.4.1, PY.1, XFG.6.2 (breakpoints 15661-18251, 19030-20177), from #3077",active,N/A,Other,Other,#FABFD2
 XGA.1,C25578T,active,N/A,Other,Other,#FABFD2
