@@ -1,5 +1,5 @@
 # Lineage Classification Update Run Report
-Run time: 2026-09-30T09:55:22
+Run time: 2026-10-13T10:58:34
 
 This report records automation steps, warnings, validation checks, and required manual review actions.
 
@@ -9,15 +9,15 @@ Command: `uv run pull_hexcodes/decision_tree.py`
 STDOUT:
 ```
 Downloading Tableau workbook…
-Archived previous pending_additions.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/pending_additions_2026-09-30_1.csv
-Archived previous final_augmented_runninglist.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/final_augmented_runninglist_2026-09-30_1.csv
+Archived previous pending_additions.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/pending_additions_2026-10-13.csv
+Archived previous final_augmented_runninglist.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/final_augmented_runninglist_2026-10-13.csv
 Loaded running list: 121 variants
 Found new Tableau candidates: 50
 Wrote /home/dah0303/lineage-classification-cdc/pull_hexcodes/pending_additions.csv (50 rows; 25 awaiting approval)
 Approved additions included: 25
 Wrote /home/dah0303/lineage-classification-cdc/pull_hexcodes/final_augmented_runninglist.csv (146 total variants)
 Wrote /home/dah0303/lineage-classification-cdc/pull_hexcodes/qa_disagreements.csv (FYI only; does not overwrite running list)
-Run complete: 2026-09-30T09:55:23
+Run complete: 2026-10-13T10:58:37
 ```
 ✅ Completed: Step 1 — Pull latest CDC lineage updates
 
@@ -42,7 +42,7 @@ Approval summary:
 ## QA disagreement check
 ✅ Found expected file: `pull_hexcodes/qa_disagreements.csv`
 
-🟡 STATUS: PAUSED FOR HUMAN REVIEW — 21 QA disagreement row(s) detected.
+🟡 STATUS: PAUSED FOR HUMAN REVIEW — 20 QA disagreement row(s) detected.
 
 NEXT ACTION REQUIRED:
 1. Open pull_hexcodes/qa_disagreements.csv
@@ -54,10 +54,10 @@ Showing first 10 QA disagreement rows:
 ```
   variant hex_code tableau_hex
 B.1.1.529  #FFBE7D     #E26028
-B.1.617.2  #B39DDB     #F28E2B
      BA.2  #9CCD67     #E15759
+BA.2.12.1  #7CB342     #EDC948
   BA.2.86  #D770EE     #D771F1
-     BA.5  #80CBC4     #76B7B2
+     BF.7  #81D4FA     #A0CBE8
    CH.1.1  #827717     #A0CBE8
      JN.1  #61018F     #660099
   JN.1.18  #4AF32F     #4DF230
@@ -77,15 +77,15 @@ Command: `uv run pull_hexcodes/decision_tree.py`
 STDOUT:
 ```
 Downloading Tableau workbook…
-Archived previous pending_additions.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/pending_additions_2026-09-30_2.csv
-Archived previous final_augmented_runninglist.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/final_augmented_runninglist_2026-09-30_2.csv
+Archived previous pending_additions.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/pending_additions_2026-10-13_1.csv
+Archived previous final_augmented_runninglist.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/final_augmented_runninglist_2026-10-13_1.csv
 Loaded running list: 121 variants
 Found new Tableau candidates: 50
 Wrote /home/dah0303/lineage-classification-cdc/pull_hexcodes/pending_additions.csv (50 rows; 25 awaiting approval)
 Approved additions included: 25
 Wrote /home/dah0303/lineage-classification-cdc/pull_hexcodes/final_augmented_runninglist.csv (146 total variants)
 Wrote /home/dah0303/lineage-classification-cdc/pull_hexcodes/qa_disagreements.csv (FYI only; does not overwrite running list)
-Run complete: 2026-09-30T09:55:25
+Run complete: 2026-10-13T10:58:39
 ```
 ✅ Completed: Step 2 — Apply approved lineage updates
 ✅ Found expected file: `pull_hexcodes/final_augmented_runninglist.csv`
@@ -109,10 +109,10 @@ Checking for variants in the list of CDC-tracked variant list that are missing h
 
    Hex codes are present for all CDC-tracked variants. Go team! 
 
-The correction key is up to date with all withdrawn lineages.
+There are withdrawn lineages not accounted for in the correction key. Check the latest lineage_notes.txt file for ['RP.2.1'] and update the correction key.
 Successfully produced the clinical lineage classification file! 
 
-shape: (6_009, 7)
+shape: (6_016, 7)
 ┌────────────────┬────────────────┬────────┬──────────┬────────────────┬────────────────┬──────────┐
 │ lineage_extrac ┆ Description    ┆ status ┆ who_name ┆ doh_variant_na ┆ doh_variant_na ┆ hex_code │
 │ ted            ┆ ---            ┆ ---    ┆ ---      ┆ me             ┆ me_tables      ┆ ---      │
@@ -131,9 +131,6 @@ shape: (6_009, 7)
 │ A.2.3          ┆ Scottish       ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ #FABFD2  │
 │                ┆ lineage        ┆        ┆          ┆                ┆                ┆          │
 │ …              ┆ …              ┆ …      ┆ …        ┆ …              ┆ …              ┆ …        │
-│ XHA            ┆ Recombinant    ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ #FABFD2  │
-│                ┆ lineage of     ┆        ┆          ┆                ┆                ┆          │
-│                ┆ TB.2, R…       ┆        ┆          ┆                ┆                ┆          │
 │ XHB            ┆ Recombinant    ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ #FABFD2  │
 │                ┆ lineage of     ┆        ┆          ┆                ┆                ┆          │
 │                ┆ PY.1.1,…       ┆        ┆          ┆                ┆                ┆          │
@@ -146,6 +143,7 @@ shape: (6_009, 7)
 │ XHE            ┆ Recombinant    ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ #FABFD2  │
 │                ┆ lineage of     ┆        ┆          ┆                ┆                ┆          │
 │                ┆ PQ.16.1…       ┆        ┆          ┆                ┆                ┆          │
+│ N/A            ┆ N/A            ┆ active ┆ N/A      ┆ Other          ┆ Other          ┆ #FABFD2  │
 └────────────────┴────────────────┴────────┴──────────┴────────────────┴────────────────┴──────────┘
 ```
 ✅ Completed: Step 3 — Generate clinical output
@@ -168,10 +166,10 @@ Checking for variants in the list of CDC-tracked variant list that are missing h
 
    Hex codes are present for all CDC-tracked variants. Go team! 
 
-The correction key is up to date with all withdrawn lineages.
+There are withdrawn lineages not accounted for in the correction key. Check the latest lineage_notes.txt file for ['RP.2.1'] and update the correction key.
 Successfully produced the wastewater lineage classification file! 
 
-shape: (6_301, 7)
+shape: (6_309, 7)
 ┌────────────────┬───────────────┬───────────┬──────────┬───────────────┬───────────────┬──────────┐
 │ lineage_extrac ┆ Description   ┆ status    ┆ who_name ┆ doh_variant_n ┆ wastewater_va ┆ hex_code │
 │ ted            ┆ ---           ┆ ---       ┆ ---      ┆ ame           ┆ riant_name    ┆ ---      │
@@ -191,9 +189,6 @@ shape: (6_301, 7)
 │ A.2.3          ┆ Scottish      ┆ active    ┆ N/A      ┆ Other         ┆ Ancestral     ┆ #333333  │
 │                ┆ lineage       ┆           ┆          ┆               ┆               ┆          │
 │ …              ┆ …             ┆ …         ┆ …        ┆ …             ┆ …             ┆ …        │
-│ MC.34          ┆ Withdrawn:    ┆ withdrawn ┆ N/A      ┆ unreportable  ┆ unreportable  ┆ #EEEEEE  │
-│                ┆ Alias of      ┆           ┆          ┆               ┆               ┆          │
-│                ┆ B.1.1.529.…   ┆           ┆          ┆               ┆               ┆          │
 │ XFG.20         ┆ Withdrawn:    ┆ withdrawn ┆ N/A      ┆ unreportable  ┆ unreportable  ┆ #EEEEEE  │
 │                ┆ C10615T       ┆           ┆          ┆               ┆               ┆          │
 │                ┆ (didn't rea…  ┆           ┆          ┆               ┆               ┆          │
@@ -202,6 +197,7 @@ shape: (6_301, 7)
 │                ┆ sequence h…   ┆           ┆          ┆               ┆               ┆          │
 │ QW.2           ┆ Redesignated  ┆ withdrawn ┆ N/A      ┆ XFG           ┆ XFG           ┆ #4E6EA1  │
 │                ┆ as XFG.5.4.2  ┆           ┆          ┆               ┆               ┆          │
+│ N/A            ┆ N/A           ┆ active    ┆ N/A      ┆ Other         ┆ Other         ┆ #FABFD2  │
 │ unreportable   ┆ For variants  ┆           ┆ N/A      ┆ unreportable  ┆ unreportable  ┆ #eeeeee  │
 │                ┆ Freyja        ┆           ┆          ┆               ┆               ┆          │
 │                ┆ detected b…   ┆           ┆          ┆               ┆               ┆          │
@@ -212,11 +208,11 @@ shape: (6_301, 7)
 ## Output validation
 ✅ Found expected file: `results/lineage_classifications.csv`
 ✅ `results/lineage_classifications.csv` passed validation.
-Rows: 6009
+Rows: 6016
 Columns: 7
 ✅ Found expected file: `results/ww_lineage_classifications.csv`
 ✅ `results/ww_lineage_classifications.csv` passed validation.
-Rows: 6301
+Rows: 6309
 Columns: 7
 
 ## SUMMARY
@@ -224,9 +220,9 @@ Pending lineage rows: 50
 Approved rows: 25
 Rejected rows: 25
 Still pending review: 0
-QA disagreements: 23
-Clinical output rows: 6009
-Wastewater output rows: 6301
+QA disagreements: 21
+Clinical output rows: 6016
+Wastewater output rows: 6309
 
 ## FINAL STATUS
 ✅ SUCCESS: Pipeline completed successfully.
