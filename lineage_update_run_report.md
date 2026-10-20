@@ -1,5 +1,5 @@
 # Lineage Classification Update Run Report
-Run time: 2026-10-13T10:58:34
+Run time: 2026-10-20T16:20:59
 
 This report records automation steps, warnings, validation checks, and required manual review actions.
 
@@ -9,15 +9,15 @@ Command: `uv run pull_hexcodes/decision_tree.py`
 STDOUT:
 ```
 Downloading Tableau workbook…
-Archived previous pending_additions.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/pending_additions_2026-10-13.csv
-Archived previous final_augmented_runninglist.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/final_augmented_runninglist_2026-10-13.csv
+Archived previous pending_additions.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/pending_additions_2026-10-20.csv
+Archived previous final_augmented_runninglist.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/final_augmented_runninglist_2026-10-20.csv
 Loaded running list: 121 variants
 Found new Tableau candidates: 50
 Wrote /home/dah0303/lineage-classification-cdc/pull_hexcodes/pending_additions.csv (50 rows; 25 awaiting approval)
 Approved additions included: 25
 Wrote /home/dah0303/lineage-classification-cdc/pull_hexcodes/final_augmented_runninglist.csv (146 total variants)
 Wrote /home/dah0303/lineage-classification-cdc/pull_hexcodes/qa_disagreements.csv (FYI only; does not overwrite running list)
-Run complete: 2026-10-13T10:58:37
+Run complete: 2026-10-20T16:21:03
 ```
 ✅ Completed: Step 1 — Pull latest CDC lineage updates
 
@@ -42,7 +42,7 @@ Approval summary:
 ## QA disagreement check
 ✅ Found expected file: `pull_hexcodes/qa_disagreements.csv`
 
-🟡 STATUS: PAUSED FOR HUMAN REVIEW — 20 QA disagreement row(s) detected.
+🟡 STATUS: PAUSED FOR HUMAN REVIEW — 22 QA disagreement row(s) detected.
 
 NEXT ACTION REQUIRED:
 1. Open pull_hexcodes/qa_disagreements.csv
@@ -54,15 +54,15 @@ Showing first 10 QA disagreement rows:
 ```
   variant hex_code tableau_hex
 B.1.1.529  #FFBE7D     #E26028
-     BA.2  #9CCD67     #E15759
+B.1.617.2  #B39DDB     #F28E2B
+     BA.2  #9CCD67     #9CCC65
 BA.2.12.1  #7CB342     #EDC948
   BA.2.86  #D770EE     #D771F1
-     BF.7  #81D4FA     #A0CBE8
-   CH.1.1  #827717     #A0CBE8
+     BA.4  #FFD54F     #59A14F
+     BA.5  #80CBC4     #76B7B2
      JN.1  #61018F     #660099
   JN.1.18  #4AF32F     #4DF230
 JN.1.18.6  #D16F2C     #E16B1D
-   KP.2.3  #628DE8     #E15759
 ```
 
 See lineage_update_run_report.md for full details.
@@ -77,15 +77,15 @@ Command: `uv run pull_hexcodes/decision_tree.py`
 STDOUT:
 ```
 Downloading Tableau workbook…
-Archived previous pending_additions.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/pending_additions_2026-10-13_1.csv
-Archived previous final_augmented_runninglist.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/final_augmented_runninglist_2026-10-13_1.csv
+Archived previous pending_additions.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/pending_additions_2026-10-20_1.csv
+Archived previous final_augmented_runninglist.csv -> /home/dah0303/lineage-classification-cdc/pull_hexcodes/retired/final_augmented_runninglist_2026-10-20_1.csv
 Loaded running list: 121 variants
 Found new Tableau candidates: 50
 Wrote /home/dah0303/lineage-classification-cdc/pull_hexcodes/pending_additions.csv (50 rows; 25 awaiting approval)
 Approved additions included: 25
 Wrote /home/dah0303/lineage-classification-cdc/pull_hexcodes/final_augmented_runninglist.csv (146 total variants)
 Wrote /home/dah0303/lineage-classification-cdc/pull_hexcodes/qa_disagreements.csv (FYI only; does not overwrite running list)
-Run complete: 2026-10-13T10:58:39
+Run complete: 2026-10-20T16:21:04
 ```
 ✅ Completed: Step 2 — Apply approved lineage updates
 ✅ Found expected file: `pull_hexcodes/final_augmented_runninglist.csv`
@@ -109,7 +109,7 @@ Checking for variants in the list of CDC-tracked variant list that are missing h
 
    Hex codes are present for all CDC-tracked variants. Go team! 
 
-There are withdrawn lineages not accounted for in the correction key. Check the latest lineage_notes.txt file for ['RP.2.1'] and update the correction key.
+The correction key is up to date with all withdrawn lineages.
 Successfully produced the clinical lineage classification file! 
 
 shape: (6_016, 7)
@@ -166,7 +166,7 @@ Checking for variants in the list of CDC-tracked variant list that are missing h
 
    Hex codes are present for all CDC-tracked variants. Go team! 
 
-There are withdrawn lineages not accounted for in the correction key. Check the latest lineage_notes.txt file for ['RP.2.1'] and update the correction key.
+The correction key is up to date with all withdrawn lineages.
 Successfully produced the wastewater lineage classification file! 
 
 shape: (6_309, 7)
