@@ -5840,7 +5840,7 @@ XFG.14.6,C5884T,active,N/A,XFG,XFG,#4E6EA1
 XFG.14.7,C17463T,active,N/A,XFG,XFG,#4E6EA1
 XFG.14.8,C9565T,active,N/A,XFG,XFG,#4E6EA1
 XFG.14.8.1,"S:N532S, from sars-cov-2-variants/lineage-proposals#3466",active,N/A,XFG,XFG,#4E6EA1
-TA.1,"Alias of XFG.14.8.1.1, S:Q613H, from sars-cov-2-variants/lineage-proposals#3466",active,N/A,XFG,XFG,#4E6EA1
+TA.1,"Alias of XFG.14.8.1.1, S:Q613H, from sars-cov-2-variants/lineage-proposals#3466",active,N/A,TA.1,TA.1,#4C9690
 XFG.14.9,"S:A1070T, on C203T branch",active,N/A,XFG,XFG,#4E6EA1
 XFG.14.10,S:V642G,active,N/A,XFG,XFG,#4E6EA1
 XFG.15,"S:R681H, ORF1b:A1525S, ORF1b:T2432I, on C20178T branch",active,N/A,XFG,XFG,#4E6EA1
